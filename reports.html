@@ -11,273 +11,6 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
-    <script type="module">
-        // Stabil Sürümler (v10.7.1)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // EKLENDİ: setPersistence, browserLocalPersistence
-        import { getAuth, signInAnonymously, signInWithCustomToken, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // --- FIREBASE KONFIGURASYONU ---
-        let firebaseConfig;
-        let appId;
-
-        // 1. Durum: Canvas/Geliştirme Ortamı
-        if (typeof __firebase_config !== 'undefined') {
-            firebaseConfig = JSON.parse(__firebase_config);
-            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        } 
-        // 2. Durum: Canlı Ortam
-        else {
-            firebaseConfig = {
-                apiKey: "AIzaSyA-_Aw9hQsXWZx-N_bEYIetLiM-8RPX19g",
-                authDomain: "jcsec-4b7ab.firebaseapp.com",
-                projectId: "jcsec-4b7ab",
-                storageBucket: "jcsec-4b7ab.firebasestorage.app",
-                messagingSenderId: "389796943692",
-                appId: "1:389796943692:web:3369800969bf150a8621e9",
-                measurementId: "G-2JM43KGB24"
-            };
-            appId = "prod-app";
-        }
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // State
-        let currentUser = null;
-        let isAdminUIActive = false;
-
-        // --- AUTH LOGIC (DÜZELTİLDİ) ---
-        // Sayfa yenilendiğinde Admin oturumunu korumak için Persistence ayarı
-        setPersistence(auth, browserLocalPersistence)
-            .then(() => {
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        // Mevcut bir oturum varsa (Admin veya Anonim) bunu kullan
-                        currentUser = user;
-                        updateUI(user);
-                    } else {
-                        // Hiçbir oturum yoksa (ilk giriş), Anonim giriş yap
-                        try {
-                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                await signInWithCustomToken(auth, __initial_auth_token);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (error) {
-                            console.error("Auth init error:", error);
-                            const grid = document.getElementById('reports-grid');
-                            if(grid) grid.innerHTML = `<p class="text-red-500 text-center col-span-full">Auth Error: ${error.message}</p>`;
-                        }
-                    }
-                    // Raporları her durumda yükle
-                    loadReports();
-                });
-            })
-            .catch((error) => {
-                console.error("Persistence error:", error);
-            });
-
-        // UI Güncelleme Fonksiyonu
-        function updateUI(user) {
-            if (user && !user.isAnonymous) {
-                isAdminUIActive = true;
-                const panel = document.getElementById('admin-panel');
-                if(panel) panel.classList.remove('hidden');
-                
-                const lockIcon = document.getElementById('admin-lock-icon');
-                if(lockIcon) lockIcon.classList.add('text-cyber-green');
-                
-                const status = document.getElementById('admin-status');
-                if(status) status.innerText = "Admin: Online";
-                
-                toggleDeleteButtons(true);
-            } else {
-                isAdminUIActive = false;
-                const panel = document.getElementById('admin-panel');
-                if(panel) panel.classList.add('hidden');
-
-                const lockIcon = document.getElementById('admin-lock-icon');
-                if(lockIcon) lockIcon.classList.remove('text-cyber-green');
-
-                const status = document.getElementById('admin-status');
-                if(status) status.innerText = "";
-                
-                toggleDeleteButtons(false);
-            }
-        }
-
-        // Load Reports
-        function loadReports() {
-            const collectionPath = typeof __firebase_config !== 'undefined' 
-                ? collection(db, 'artifacts', appId, 'public', 'data', 'reports') 
-                : collection(db, 'reports');
-
-            const q = query(collectionPath, orderBy('createdAt', 'desc'));
-            
-            onSnapshot(q, (snapshot) => {
-                const grid = document.getElementById('reports-grid');
-                if(!grid) return;
-                
-                grid.innerHTML = ''; 
-
-                if (snapshot.empty) {
-                    grid.innerHTML = '<p class="text-gray-500 text-center col-span-full">No reports found via Firebase.</p>';
-                }
-
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const reportHtml = createReportCard(docSnap.id, data);
-                    grid.insertAdjacentHTML('beforeend', reportHtml);
-                });
-                
-                if(isAdminUIActive) toggleDeleteButtons(true);
-            }, (error) => {
-                console.error("Error loading reports:", error);
-                const grid = document.getElementById('reports-grid');
-                if(grid) grid.innerHTML = `<p class="text-red-500 text-center col-span-full">Error: ${error.message}<br>Check Console for details.</p>`;
-            });
-        }
-
-        // HTML Generator
-        function createReportCard(id, data) {
-            const type = data.type || 'WALKTHROUGH';
-            const title = data.title || 'Untitled';
-            const desc = data.description || '';
-            const tag = data.tag || 'Info';
-            const date = data.date || '';
-            const link = data.link || '#';
-            const btnText = data.btnText || 'View';
-
-            const iconClass = type === 'PDF' ? 'fa-file-pdf text-cyber-red' : 
-                            type === 'WALKTHROUGH' ? 'fa-file-alt text-cyber-green' : 'fa-terminal text-blue-500';
-            
-            const hoverColor = type === 'PDF' ? 'hover:border-cyber-red group-hover:text-cyber-red' : 
-                             type === 'WALKTHROUGH' ? 'hover:border-cyber-green group-hover:text-cyber-green' : 'hover:border-blue-500 group-hover:text-blue-500';
-            
-            const badgeColor = type === 'PDF' ? 'bg-red-900/30 text-red-300 border-red-900' :
-                             type === 'WALKTHROUGH' ? 'bg-green-900/30 text-green-300 border-green-900' : 'bg-blue-900/30 text-blue-300 border-blue-900';
-
-            const btnHover = type === 'PDF' ? 'hover:bg-cyber-red' :
-                           type === 'WALKTHROUGH' ? 'hover:bg-cyber-green hover:text-black' : 'hover:bg-blue-500';
-
-            const iconParts = iconClass.split(' '); 
-            const hoverParts = hoverColor.split(' ');
-
-            return `
-            <div class="relative bg-cyber-gray border border-[#23305f] rounded-lg p-6 ${hoverParts[0]} transition-all flex flex-col md:flex-row items-start md:items-center justify-between group">
-                <button onclick="window.deleteReport('${id}')" class="delete-btn hidden absolute top-2 right-2 text-red-500 hover:text-red-300 bg-black/50 rounded-full w-8 h-8 flex items-center justify-center z-20 transition-colors">
-                    <i class="fas fa-trash"></i>
-                </button>
-
-                <div class="flex items-start space-x-4 mb-4 md:mb-0 w-full">
-                    <div class="${iconParts[1]} text-3xl mt-1">
-                        <i class="fas ${iconParts[0]}"></i>
-                    </div>
-                    <div class="w-full pr-4">
-                        <h3 class="text-xl font-bold text-white ${hoverParts[1]} transition-colors break-words">${title}</h3>
-                        <p class="text-sm text-gray-400 mt-1 break-words">${desc}</p>
-                        <div class="flex items-center space-x-2 mt-2 flex-wrap gap-y-2">
-                             <span class="text-xs ${badgeColor} px-2 py-1 rounded border whitespace-nowrap">${tag}</span>
-                             <span class="text-xs text-gray-500 whitespace-nowrap">${date}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex-shrink-0 mt-4 md:mt-0">
-                    <a href="${link}" target="_blank" class="flex items-center px-4 py-2 bg-[#1a2342] ${btnHover} hover:text-white text-gray-300 rounded transition-colors font-bold text-sm whitespace-nowrap">
-                        <i class="fas fa-download mr-2"></i> ${btnText}
-                    </a>
-                </div>
-            </div>`;
-        }
-
-        // Global Window Functions
-        window.deleteReport = async (id) => {
-            if(!confirm("Are you sure?")) return;
-            try {
-                const collectionPath = typeof __firebase_config !== 'undefined' 
-                    ? collection(db, 'artifacts', appId, 'public', 'data', 'reports')
-                    : collection(db, 'reports');
-
-                await deleteDoc(doc(collectionPath, id));
-            } catch (e) {
-                alert("Hata: " + e.message);
-            }
-        };
-
-        window.toggleAdmin = async () => {
-            if (isAdminUIActive) {
-                await signOut(auth);
-                // Çıkış yapınca otomatik olarak anonime dön veya sayfayı yenile
-                window.location.reload();
-            } else {
-                const email = prompt("Admin Email:");
-                if(!email) return;
-                const password = prompt("Admin Password:");
-                if(!password) return;
-
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    // Başarılı girişten sonra listener otomatik tetiklenir
-                    alert("Admin Access Granted.");
-                } catch (error) {
-                    alert("Login Failed: " + error.message);
-                }
-            }
-        };
-
-        function toggleDeleteButtons(show) {
-            const btns = document.querySelectorAll('.delete-btn');
-            btns.forEach(btn => {
-                if(show) btn.classList.remove('hidden');
-                else btn.classList.add('hidden');
-            });
-        }
-
-        window.handleAddReport = async (e) => {
-            e.preventDefault();
-            if (!currentUser || currentUser.isAnonymous) {
-                alert("You must be logged in as Admin.");
-                return;
-            }
-
-            const form = e.target;
-            const newReport = {
-                title: form.title.value,
-                description: form.description.value,
-                type: form.type.value,
-                tag: form.tag.value,
-                date: form.date.value,
-                link: form.link.value,
-                btnText: form.btnText.value || "View",
-                createdAt: serverTimestamp()
-            };
-
-            try {
-                const btn = form.querySelector('button[type="submit"]');
-                btn.disabled = true;
-                btn.innerText = "Saving...";
-
-                const collectionPath = typeof __firebase_config !== 'undefined' 
-                    ? collection(db, 'artifacts', appId, 'public', 'data', 'reports')
-                    : collection(db, 'reports');
-
-                await addDoc(collectionPath, newReport);
-                form.reset();
-                alert("Report added!");
-            } catch (error) {
-                alert("Error: " + error.message);
-            } finally {
-                const btn = form.querySelector('button[type="submit"]');
-                btn.disabled = false;
-                btn.innerText = "Add to Archive";
-            }
-        };
-    </script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -318,7 +51,7 @@
     <!-- Background Overlay -->
     <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
 
-    <!-- Navbar (Simplified) -->
+    <!-- Navbar -->
     <nav class="fixed w-full z-50 bg-cyber-black/90 backdrop-blur-md border-b border-[#23305f]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -343,66 +76,88 @@
             A collection of sanitized penetration test reports, CTF write-ups, and technical documentation demonstrating my methodology and findings.
         </p>
 
-        <!-- Admin Panel (Hidden by default) -->
-        <div id="admin-panel" class="hidden mb-12 bg-[#0f1733] border border-cyber-green rounded-xl p-6 shadow-[0_0_15px_rgba(94,234,212,0.2)]">
-            <h2 class="text-xl font-bold text-cyber-green mb-4"><i class="fas fa-plus-circle mr-2"></i>Add New Report</h2>
-            <form onsubmit="window.handleAddReport(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="col-span-2 md:col-span-1">
-                    <label class="block text-xs text-gray-400 mb-1">Title</label>
-                    <input type="text" name="title" required class="w-full bg-cyber-black border border-gray-700 rounded p-2 text-white focus:border-cyber-green outline-none" placeholder="e.g. HTB Forest Writeup">
-                </div>
-                <div class="col-span-2 md:col-span-1">
-                    <label class="block text-xs text-gray-400 mb-1">Tag/Badge</label>
-                    <input type="text" name="tag" required class="w-full bg-cyber-black border border-gray-700 rounded p-2 text-white focus:border-cyber-green outline-none" placeholder="e.g. Confidential, CTF, Public">
-                </div>
-                
-                <div class="col-span-2">
-                    <label class="block text-xs text-gray-400 mb-1">Description</label>
-                    <textarea name="description" required rows="2" class="w-full bg-cyber-black border border-gray-700 rounded p-2 text-white focus:border-cyber-green outline-none" placeholder="Brief summary of findings..."></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Type</label>
-                    <select name="type" class="w-full bg-cyber-black border border-gray-700 rounded p-2 text-white focus:border-cyber-green outline-none">
-                        <option value="PDF">PDF Report</option>
-                        <option value="WALKTHROUGH">Walkthrough (Text)</option>
-                        <option value="CTF">CTF Writeup (Terminal)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Date</label>
-                    <input type="text" name="date" required class="w-full bg-cyber-black border border-gray-700 rounded p-2 text-white focus:border-cyber-green outline-none" placeholder="e.g. Dec 2024">
-                </div>
-
-                <div class="col-span-2 md:col-span-1">
-                    <label class="block text-xs text-gray-400 mb-1">Link (URL)</label>
-                    <input type="url" name="link" required class="w-full bg-cyber-black border border-gray-700 rounded p-2 text-white focus:border-cyber-green outline-none" placeholder="https://drive.google.com/...">
-                </div>
-                <div class="col-span-2 md:col-span-1">
-                    <label class="block text-xs text-gray-400 mb-1">Button Text</label>
-                    <input type="text" name="btnText" class="w-full bg-cyber-black border border-gray-700 rounded p-2 text-white focus:border-cyber-green outline-none" placeholder="e.g. Download PDF (2.4 MB)">
-                </div>
-
-                <div class="col-span-2">
-                    <button type="submit" class="w-full bg-cyber-green text-black font-bold py-2 rounded hover:bg-teal-400 transition-colors">Add to Archive</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Filters (Optional UI - Visual Only) -->
+        <!-- Filters (Visual Only) -->
         <div class="flex justify-center space-x-4 mb-12">
             <button class="px-4 py-2 bg-[#1a2342] border border-cyber-green text-cyber-green rounded hover:bg-cyber-green hover:text-black transition-colors font-bold text-sm">All Files</button>
             <button class="px-4 py-2 bg-[#1a2342] border border-[#23305f] text-gray-400 rounded hover:border-cyber-green hover:text-white transition-colors text-sm">Pentest Reports</button>
             <button class="px-4 py-2 bg-[#1a2342] border border-[#23305f] text-gray-400 rounded hover:border-cyber-green hover:text-white transition-colors text-sm">CTF Writeups</button>
         </div>
 
-        <!-- Reports Grid (Dynamic) -->
+        <!-- Reports Grid -->
         <div id="reports-grid" class="grid grid-cols-1 gap-6">
-            <!-- Loading State -->
-            <div class="col-span-full text-center py-10">
-                <i class="fas fa-circle-notch fa-spin text-cyber-green text-3xl"></i>
-                <p class="text-gray-500 mt-2">Loading secure archive...</p>
+
+              <div class="relative bg-cyber-gray border border-[#23305f] rounded-lg p-6 hover:border-cyber-green group-hover:text-cyber-green transition-all flex flex-col md:flex-row items-start md:items-center justify-between group">
+                <div class="flex items-start space-x-4 mb-4 md:mb-0 w-full">
+                    <div class="text-cyber-green text-3xl mt-1">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="w-full pr-4">
+                        <h3 class="text-xl font-bold text-white hover:text-cyber-green transition-colors break-words">Rapor Başlığı Buraya</h3>
+                        <p class="text-sm text-gray-400 mt-1 break-words">Rapor açıklaması buraya gelecek.</p>
+                        <div class="flex items-center space-x-2 mt-2 flex-wrap gap-y-2">
+                             <span class="text-xs bg-green-900/30 text-green-300 border border-green-900 px-2 py-1 rounded whitespace-nowrap">CTF</span>
+                             <span class="text-xs text-gray-500 whitespace-nowrap">Tarih</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 mt-4 md:mt-0">
+                    
+                    <a href="/slort/slort.html" class="flex items-center px-4 py-2 bg-[#1a2342] hover:bg-cyber-green hover:text-black text-gray-300 rounded transition-colors font-bold text-sm whitespace-nowrap">
+                        <i class="fas fa-eye mr-2"></i> Read Writeup
+                    </a>
+
+                </div>
             </div>
+
+            <!-- REPORT ITEM START -->
+            <!-- 
+            <div class="relative bg-cyber-gray border border-[#23305f] rounded-lg p-6 hover:border-cyber-green group-hover:text-cyber-green transition-all flex flex-col md:flex-row items-start md:items-center justify-between group">
+                <div class="flex items-start space-x-4 mb-4 md:mb-0 w-full">
+                    <div class="text-cyber-green text-3xl mt-1">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="w-full pr-4">
+                        <h3 class="text-xl font-bold text-white hover:text-cyber-green transition-colors break-words">Rapor Başlığı Buraya</h3>
+                        <p class="text-sm text-gray-400 mt-1 break-words">Rapor açıklaması buraya gelecek.</p>
+                        <div class="flex items-center space-x-2 mt-2 flex-wrap gap-y-2">
+                             <span class="text-xs bg-green-900/30 text-green-300 border border-green-900 px-2 py-1 rounded whitespace-nowrap">CTF</span>
+                             <span class="text-xs text-gray-500 whitespace-nowrap">Tarih</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 mt-4 md:mt-0">
+                    
+                    <a href="/rapor_ismi/ornek.html" class="flex items-center px-4 py-2 bg-[#1a2342] hover:bg-cyber-green hover:text-black text-gray-300 rounded transition-colors font-bold text-sm whitespace-nowrap">
+                        <i class="fas fa-eye mr-2"></i> Read Writeup
+                    </a>
+
+                </div>
+            </div>
+            -->
+            <!-- REPORT ITEM END -->
+
+            <!-- Şuan boş görünmemesi için bir tane aktif örnek (kendi linkini buraya yazabilirsin) -->
+            <div class="relative bg-cyber-gray border border-[#23305f] rounded-lg p-6 hover:border-cyber-green group-hover:text-cyber-green transition-all flex flex-col md:flex-row items-start md:items-center justify-between group">
+                <div class="flex items-start space-x-4 mb-4 md:mb-0 w-full">
+                    <div class="text-cyber-green text-3xl mt-1">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="w-full pr-4">
+                        <h3 class="text-xl font-bold text-white hover:text-cyber-green transition-colors break-words">Örnek Rapor</h3>
+                        <p class="text-sm text-gray-400 mt-1 break-words">Yeni eklediğin raporun açıklaması.</p>
+                        <div class="flex items-center space-x-2 mt-2 flex-wrap gap-y-2">
+                             <span class="text-xs bg-green-900/30 text-green-300 border border-green-900 px-2 py-1 rounded whitespace-nowrap">Category</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 mt-4 md:mt-0">
+                    <!-- REDIRECT KISMI BURADA -->
+                    <a href="/rapor_ismi/ornek.html" class="flex items-center px-4 py-2 bg-[#1a2342] hover:bg-cyber-green hover:text-black text-gray-300 rounded transition-colors font-bold text-sm whitespace-nowrap">
+                        <i class="fas fa-eye mr-2"></i> Read Writeup
+                    </a>
+                </div>
+            </div>
+
         </div>
 
     </main>
@@ -413,13 +168,6 @@
             <p class="text-gray-600 text-sm font-mono">
                 &copy; 2025 Josh Chalabi. <span class="text-cyber-green">Secure by Design.</span>
             </p>
-        </div>
-        <!-- Secret Admin Toggle -->
-        <div class="absolute bottom-4 right-4 flex items-center space-x-2">
-            <span id="admin-status" class="text-xs text-cyber-green font-mono"></span>
-            <button onclick="window.toggleAdmin()" class="text-gray-800 hover:text-gray-600 transition-colors">
-                <i id="admin-lock-icon" class="fas fa-lock"></i>
-            </button>
         </div>
     </footer>
 
