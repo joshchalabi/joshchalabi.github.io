@@ -30,6 +30,7 @@
                     boxShadow: {
                         'neon': '0 0 10px rgba(94, 234, 212, 0.5), 0 0 20px rgba(94, 234, 212, 0.3)',
                         'neon-purple': '0 0 10px rgba(167, 139, 250, 0.5), 0 0 20px rgba(167, 139, 250, 0.3)',
+                        'neon-red': '0 0 10px rgba(255, 0, 60, 0.5), 0 0 20px rgba(255, 0, 60, 0.3)',
                     }
                 }
             }
@@ -90,7 +91,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex-shrink-0">
-                    <span class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</span>
+                    <a href="index.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-8">
@@ -98,6 +99,7 @@
                         <a href="#about" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">About</a>
                         <a href="#skills" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">Skills</a>
                         <a href="#experience" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">Experience & Labs</a>
+                        <a href="#reports" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">Reports</a>
                         <a href="#certificates" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">Certificates</a>
                         <a href="#contact" class="text-cyber-black bg-cyber-green hover:bg-teal-400 px-4 py-2 rounded text-sm font-bold transition-all shadow-neon">Contact</a>
                     </div>
@@ -117,6 +119,7 @@
                 <a href="#about" class="text-gray-300 hover:text-cyber-green block px-3 py-2 rounded-md text-base font-medium">About</a>
                 <a href="#skills" class="text-gray-300 hover:text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Skills</a>
                 <a href="#experience" class="text-gray-300 hover:text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Experience</a>
+                <a href="#reports" class="text-gray-300 hover:text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Reports</a>
                 <a href="#contact" class="text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Contact</a>
             </div>
         </div>
@@ -159,7 +162,7 @@
                         <span class="text-cyber-green">root@kali:~$</span> <span class="text-blue-400">whoami</span>
                     </div>
                     <div class="pl-4 text-white">
-                        > Penetration Tester (Junior)
+                        > Penetration Tester (Junior–Mid)
                     </div>
                     
                     <div>
@@ -374,7 +377,8 @@
         </div>
     </section>
 
-        <section id="reports" class="relative z-10 py-20 bg-cyber-black border-t border-[#23305f]">
+    <!-- Reports Section -->
+    <section id="reports" class="relative z-10 py-20 bg-cyber-black border-t border-[#23305f]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl md:text-4xl font-bold text-center mb-16"><span class="text-cyber-green">cat</span> /var/log/reports</h2>
 
@@ -391,9 +395,9 @@
                     <p class="text-gray-400 text-sm mb-6 flex-grow">
                         A sanitized version of a black-box penetration test conducted on a mock corporate network. Includes executive summary and technical findings.
                     </p>
-                    <a href="#" class="flex items-center justify-center space-x-2 bg-[#1a2342] hover:bg-cyber-red hover:text-white text-gray-300 py-3 rounded transition-colors font-bold text-sm">
-                        <i class="fas fa-download"></i>
-                        <span>Download PDF</span>
+                    <a href="reports.html" class="flex items-center justify-center space-x-2 bg-[#1a2342] hover:bg-cyber-red hover:text-white text-gray-300 py-3 rounded transition-colors font-bold text-sm">
+                        <i class="fas fa-eye"></i>
+                        <span>View Reports</span>
                     </a>
                 </div>
 
@@ -409,7 +413,7 @@
                     <p class="text-gray-400 text-sm mb-6 flex-grow">
                         Detailed documentation of an AD attack chain: From initial foothold via SMB to Domain Admin using Kerberoasting and DCSync.
                     </p>
-                    <a href="#" class="flex items-center justify-center space-x-2 bg-[#1a2342] hover:bg-cyber-green hover:text-black text-gray-300 py-3 rounded transition-colors font-bold text-sm">
+                    <a href="reports.html" class="flex items-center justify-center space-x-2 bg-[#1a2342] hover:bg-cyber-green hover:text-black text-gray-300 py-3 rounded transition-colors font-bold text-sm">
                         <i class="fas fa-eye"></i>
                         <span>View Document</span>
                     </a>
@@ -417,66 +421,56 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Certificates Section -->
-    <section id="certificates" class="relative z-10 py-20 bg-cyber-black">
+    <section id="certificates" class="relative z-10 py-20 bg-cyber-gray/30 border-t border-[#23305f]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl md:text-4xl font-bold text-center mb-16"><span class="text-cyber-green">ls</span> -la /certificates</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Cert 1 -->
-             <a href="https://coursera.org/share/a10e072ec1e6a4800dfe7a8d7b4db522" target="_blank" class="flex bg-cyber-gray p-4 rounded-lg border border-[#23305f] items-center space-x-4 hover:bg-[#1a2342] transition-colors cursor-pointer block text-left">
-    
-                <div class="flex-shrink-0 w-16 h-16 bg-[#1a2342] rounded flex items-center justify-center text-3xl text-blue-500">
-                    <i class="fab fa-google"></i>
-                </div>
-    
-                <div>
-                    <h3 class="text-lg font-bold text-white">Google Cybersecurity Certificate</h3>
-                    <p class="text-gray-400 text-sm">Issued: 2024 — 2025</p>
-                    <div class="mt-2">
-                        <p class="text-xs text-gray-500">Foundations of InfoSec, Log Analysis, SIEM, Threat Modeling.</p>
+                <div class="flex bg-cyber-gray p-4 rounded-lg border border-[#23305f] items-center space-x-4 hover:bg-[#1a2342] transition-colors">
+                    <div class="flex-shrink-0 w-16 h-16 bg-[#1a2342] rounded flex items-center justify-center text-3xl text-blue-500">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Google Cybersecurity Certificate</h3>
+                        <p class="text-gray-400 text-sm">Issued: 2024 — 2025</p>
+                        <div class="mt-2">
+                            <p class="text-xs text-gray-500">Foundations of InfoSec, Log Analysis, SIEM, Threat Modeling.</p>
+                        </div>
                     </div>
                 </div>
-            </a>
+
                 <!-- Cert 2 -->
-                <a href="https://tryhackme-certificates.s3-eu-west-1.amazonaws.com/THM-VZTY1JFRMN.pdf" target="_blank" class="flex bg-cyber-gray p-4 rounded-lg border border-[#23305f] items-center space-x-4 hover:bg-[#1a2342] transition-colors cursor-pointer block text-left">
-    
+                <div class="flex bg-cyber-gray p-4 rounded-lg border border-[#23305f] items-center space-x-4 hover:bg-[#1a2342] transition-colors">
                     <div class="flex-shrink-0 w-16 h-16 bg-[#1a2342] rounded flex items-center justify-center text-3xl text-cyber-red">
                         <i class="fas fa-fire"></i>
                     </div>
-                    
                     <div>
                         <h3 class="text-lg font-bold text-white">TryHackMe Jr Penetration Tester</h3>
                         <p class="text-gray-400 text-sm">Issued: 2025</p>
                         <div class="mt-2">
-                            <p class="text-xs text-gray-500">Methodology, Web & Infrastructure Assessments, Burp Suite, Nmap.</p>
+                             <p class="text-xs text-gray-500">Methodology, Web & Infrastructure Assessments, Burp Suite, Nmap.</p>
                         </div>
                     </div>
-
-                </a>
+                </div>
                  <!-- Cert 3 -->
-                <a href="https://tryhackme-certificates.s3-eu-west-1.amazonaws.com/THM-YQ17EJ4CEM.pdf" target="_blank" class="flex bg-cyber-gray p-4 rounded-lg border border-[#23305f] items-center space-x-4 hover:bg-[#1a2342] transition-colors cursor-pointer block text-left">
-    
-                    <div class="flex-shrink-0 w-16 h-16 bg-[#1a2342] rounded flex items-center justify-center text-3xl text-cyber-red">
-                        <i class="fas fa-fire"></i>
+                 <div class="flex bg-cyber-gray p-4 rounded-lg border border-[#23305f] items-center space-x-4 hover:bg-[#1a2342] transition-colors">
+                    <div class="flex-shrink-0 w-16 h-16 bg-[#1a2342] rounded flex items-center justify-center text-3xl text-cyber-green">
+                        <i class="fas fa-check-circle"></i>
                     </div>
-                    
                     <div>
-                        <h3 class="text-lg font-bold text-white">Web Fundamentals</h3>
+                        <h3 class="text-lg font-bold text-white">Offensive Pentesting Path</h3>
                         <p class="text-gray-400 text-sm">TryHackMe (Completed)</p>
                         <div class="mt-2">
-                            <p class="text-xs text-gray-500">Realistic scenarios, Web Vulnerability Assessments, Web Penetration Tests.</p>
+                            <p class="text-xs text-gray-500">Realistic scenarios, Buffer Overflows, Active Directory.</p>
                         </div>
                     </div>
-
-                </a>
+                </div>
             </div>
         </div>
     </section>
-
-    
-
 
     <!-- Footer -->
     <footer id="contact" class="relative z-10 bg-black border-t border-[#23305f] py-12">
@@ -485,7 +479,7 @@
             <div class="text-gray-400 mb-8 text-center">
                 <p class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Bayern, Germany</p>
                 <p class="mb-2"><i class="fas fa-envelope mr-2"></i>joshchalabi@gmail.com</p>
-                
+                <p><i class="fas fa-phone mr-2"></i>+49 1520 359 3723</p>
             </div>
             <div class="flex space-x-6 mb-8">
                 <a href="https://www.linkedin.com/in/jcs3c" target="_blank" class="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:bg-cyber-green hover:text-black transition-all transform hover:scale-110">
