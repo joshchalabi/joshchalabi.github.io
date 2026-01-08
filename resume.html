@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Josh Chalabi | Resume</title>
+
+  <!-- Tailwind CSS (same as index.html) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome (same as index.html) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Google Fonts (same as index.html) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap"
+    rel="stylesheet" />
+
+  <!-- Keep your existing theme assets so this page matches index.html visually -->
+  <script src="assets/js/tailwind.config.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body class="bg-cyber-black text-gray-300 font-mono relative overflow-x-hidden">
+  <!-- Background Overlay (same as index.html) -->
+  <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
+
+  <!-- Navbar (same as index.html) -->
+  <nav class="fixed w-full z-50 bg-cyber-black/90 backdrop-blur-md border-b border-[#23305f]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex-shrink-0">
+          <a href="index.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
+        </div>
+
+        <div class="hidden md:block">
+          <div class="ml-10 flex items-baseline space-x-8">
+            <a href="#resume" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">Resume</a>
+            <a href="#experience" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">Experience</a>
+            <a href="#projects" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">Projects</a>
+            <a href="#education" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">Education</a>
+            <a href="#skills" class="hover:text-cyber-green px-3 py-2 rounded-md text-sm font-medium transition-colors">Skills</a>
+            <a href="#contact" class="text-cyber-black bg-cyber-green hover:bg-teal-400 px-4 py-2 rounded text-sm font-bold transition-all shadow-neon">Contact</a>
+          </div>
+        </div>
+
+        <div class="-mr-2 flex md:hidden">
+          <button type="button" onclick="toggleMenu()"
+            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+            <i class="fas fa-bars text-xl"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="md:hidden hidden bg-cyber-gray border-b border-gray-700" id="mobile-menu">
+      <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <a href="#resume" class="text-gray-300 hover:text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Resume</a>
+        <a href="#experience" class="text-gray-300 hover:text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Experience</a>
+        <a href="#projects" class="text-gray-300 hover:text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Projects</a>
+        <a href="#education" class="text-gray-300 hover:text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Education</a>
+        <a href="#skills" class="text-gray-300 hover:text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Skills</a>
+        <a href="#contact" class="text-cyber-green block px-3 py-2 rounded-md text-base font-medium">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Resume Wrapper (classic resume layout: header + 2-column grid) -->
+  <section id="resume" class="relative z-10 pt-28 pb-16 md:pt-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Header block (classic resume top) -->
+    <header class="bg-[#0f1733]/70 border border-[#23305f] rounded-xl p-6 md:p-8 shadow-2xl">
+      <div class="flex flex-col lg:flex-row gap-8 lg:items-start lg:justify-between">
+
+        <!-- Name + Summary -->
+        <div class="min-w-0">
+          <p class="text-cyber-green font-tech text-sm tracking-widest">RESUME</p>
+          <h1 class="text-4xl md:text-5xl font-bold text-white mt-2">
+            Josh <span class="text-gray-400">Chalabi</span>
+          </h1>
+          <p class="text-cyber-purple text-base md:text-lg mt-2">
+            Penetration Tester (Junior–Mid) • Cybersecurity • Offensive Security
+          </p>
+          <p class="text-gray-300 leading-relaxed mt-4 max-w-3xl">
+            Hands-on Penetration Tester with a systematic approach across web applications, Active Directory fundamentals,
+            and Windows target environments within OffSec/PG, HTB, and THM labs — from reconnaissance through exploitation
+            and privilege escalation to structured reporting. Focused on reproducible findings, accurate risk assessment,
+            and clear remediation guidance.
+          </p>
+        </div>
+
+        <!-- Contact (classic right column box) -->
+        <aside class="w-full lg:w-[360px] bg-cyber-black border border-[#23305f] rounded-xl p-5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-white"><span class="text-cyber-green">$</span> Contact</h2>
+            <span class="text-xs font-mono text-gray-500 border border-gray-700 px-2 py-1 rounded">PUBLIC</span>
+          </div>
+          <div class="mt-4 space-y-3 text-sm">
+            <div class="flex gap-3"><i class="fas fa-location-dot text-cyber-green mt-0.5"></i><span><strong>Location:</strong> Bavaria, Germany</span></div>
+            <div class="flex gap-3"><i class="fas fa-envelope text-cyber-green mt-0.5"></i><span><strong>Email:</strong> joshchalabi@gmail.com</span></div>
+            <div class="flex gap-3"><i class="fas fa-phone text-cyber-green mt-0.5"></i><span><strong>Phone:</strong> +49 1520 359 3723</span></div>
+            <div class="flex gap-3"><i class="fab fa-linkedin text-cyber-green mt-0.5"></i><span><strong>LinkedIn:</strong> https://www.linkedin.com/in/jcs3c</span></div>
+            <div class="flex gap-3"><i class="fab fa-github text-cyber-green mt-0.5"></i><span><strong>GitHub:</strong> https://github.com/joshchalabi</span></div>
+            <div class="flex gap-3"><i class="fas fa-globe text-cyber-green mt-0.5"></i><span><strong>Portfolio:</strong> https://joshchalabi.github.io/</span></div>
+          </div>
+
+          <div class="mt-5 grid grid-cols-2 gap-3">
+            <a href="mailto:joshchalabi@gmail.com"
+              class="text-center text-cyber-black bg-cyber-green hover:bg-teal-400 px-3 py-2 rounded font-bold transition-all shadow-neon text-sm">
+              Email
+            </a>
+            <a href="index.html#contact"
+              class="text-center border border-cyber-green text-cyber-green hover:bg-cyber-green hover:text-cyber-black px-3 py-2 rounded font-bold transition-all shadow-neon text-sm">
+              Portfolio
+            </a>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- Classic 2-column resume grid -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Main Column (2/3) -->
+      <main class="lg:col-span-2 space-y-6">
+
+        <!-- EXPERIENCE -->
+        <section id="experience" class="bg-cyber-black border border-[#23305f] rounded-xl p-6 md:p-7">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Experience</h2>
+              <p class="text-xs text-gray-500 mt-1">Offensive Security</p>
+            </div>
+            <span class="text-xs font-mono text-cyber-green border border-cyber-green/40 px-2 py-1 rounded">Try Harder</span>
+          </div>
+
+          <!-- Item 1 -->
+          <div class="mt-6">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+              <h3 class="text-lg md:text-xl font-bold text-white">OffSec Proving Grounds (PG) • Lab-based Penetration Testing</h3>
+              <div class="text-xs text-gray-500 flex gap-3">
+                <span class="inline-flex items-center"><span class="w-2 h-2 bg-cyber-green rounded-full mr-2"></span>2025 — Present</span>
+                <span class="inline-flex items-center"><span class="w-2 h-2 bg-cyber-green rounded-full mr-2"></span>Remote</span>
+              </div>
+            </div>
+            <p class="text-gray-300 leading-relaxed mt-3">
+              Over the last month, conducted full penetration tests on <strong>66+ Windows/Linux hosts</strong> — from reconnaissance through exploitation and
+              privilege escalation to reporting. For each target, produced reproducible evidence (console outputs/screenshots) and structured reports.
+              <br /><span class="text-gray-400">OffSec:</span> Implemented the “Try Harder” approach with consistent documentation and reporting focus.
+            </p>
+            <ul class="mt-4 space-y-2 text-sm text-gray-300 list-disc pl-5">
+              <li><strong>Methodology (Try Harder):</strong> hypothesis-driven enumeration, fast feedback loops, reproducible steps, structured evidence, and reporting.</li>
+              <li><strong>Web & service enumeration:</strong> Nmap, HTTP content discovery, vHost/directory enumeration, parameter analysis, service banner review.</li>
+              <li><strong>Exploitation:</strong> file upload issues, authentication flaws, misconfigurations, LFI/path traversal and related vectors.</li>
+              <li><strong>Windows privilege escalation:</strong> permissions & misconfig analysis, service weaknesses, token/privilege checks, ACL review.</li>
+              <li><strong>Active Directory fundamentals:</strong> LDAP/Kerberos-based enumeration; understanding and practical Kerberoasting in lab environments.</li>
+              <li><strong>Reporting:</strong> PoC evidence, impact analysis, risk assessment, clear remediation guidance, and reproducible steps.</li>
+              <li><strong>Note system:</strong> standardized knowledge base with Obsidian (KB), command collections and checklists.</li>
+            </ul>
+          </div>
+
+          <!-- Divider -->
+          <div class="my-6 border-t border-[#23305f]"></div>
+
+          <!-- Item 2 -->
+          <div>
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+              <h3 class="text-lg md:text-xl font-bold text-white">TryHackMe & Hack The Box • Continuous Practice, Methodology & Scenarios</h3>
+              <div class="text-xs text-gray-500 flex gap-3">
+                <span class="inline-flex items-center"><span class="w-2 h-2 bg-cyber-red rounded-full mr-2"></span>2024 — Present</span>
+                <span class="inline-flex items-center"><span class="w-2 h-2 bg-cyber-red rounded-full mr-2"></span>Remote</span>
+              </div>
+            </div>
+            <ul class="mt-4 space-y-2 text-sm text-gray-300 list-disc pl-5">
+              <li><strong>TryHackMe (Completed — Jr Penetration Tester):</strong> pentest methodology, enumeration→exploitation→reporting workflow; common web vulns (authentication bypass, IDOR, file inclusion, XSS, SSRF, command/SQL injection); Burp Suite modules; Nmap (discovery/port scans/post-scan); Metasploit; Linux/Windows privilege escalation.</li>
+              <li><strong>TryHackMe (Completed — Web Penetration Tester / Offensive Pentesting):</strong> realistic Windows/Linux scenarios; advanced exploitation workflows; buffer overflow fundamentals; Active Directory basics (breach/enumeration, lateral movement & pivoting, persistence, credential harvesting).</li>
+              <li><strong>Hack The Box:</strong> Job Role Pentester path and selected machines focused on structured enumeration, exploit adaptation/development, and privilege escalation.</li>
+              <li><strong>Documentation:</strong> consistent note-taking, evidence collection, and report templates within an Obsidian-based vault structure.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- PROJECTS -->
+        <section id="projects" class="bg-cyber-black border border-[#23305f] rounded-xl p-6 md:p-7">
+          <div class="flex items-start justify-between gap-4">
+            <h2 class="text-2xl font-bold text-white">Selected Projects</h2>
+            <span class="text-xs font-mono text-gray-500 border border-gray-700 px-2 py-1 rounded">2025</span>
+          </div>
+
+          <div class="mt-6 space-y-6">
+            <div>
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                <h3 class="text-lg md:text-xl font-bold text-white">OffSec Note System & Report Templates</h3>
+                <div class="text-xs text-gray-500 flex gap-3">
+                  <span class="inline-flex items-center"><span class="w-2 h-2 bg-cyber-purple rounded-full mr-2"></span>Obsidian + Markdown</span>
+                  <span class="inline-flex items-center"><span class="w-2 h-2 bg-cyber-purple rounded-full mr-2"></span>2025</span>
+                </div>
+              </div>
+              <p class="text-gray-300 leading-relaxed mt-3">
+                Built a unified documentation system for enumeration, exploitation, and privilege escalation with reusable
+                command/one-liner collections and report structures.
+              </p>
+              <ul class="mt-4 space-y-2 text-sm text-gray-300 list-disc pl-5">
+                <li>Checklists and attack-path notes</li>
+                <li>Evidence workflow (screenshots/logs) and conversion into reports</li>
+                <li>Per-machine documentation: target, findings, exploits, root/admin proof</li>
+              </ul>
+            </div>
+
+            <div class="border-t border-[#23305f] pt-6">
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                <h3 class="text-lg md:text-xl font-bold text-white">Mini Automations (Optional)</h3>
+                <div class="text-xs text-gray-500 flex gap-3">
+                  <span class="inline-flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>Python / Bash</span>
+                  <span class="inline-flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>2025</span>
+                </div>
+              </div>
+              <ul class="mt-4 space-y-2 text-sm text-gray-300 list-disc pl-5">
+                <li>Lab-oriented scripts for analyzing Nmap outputs and suggesting next steps.</li>
+                <li>Automated structuring of wordlists/enumeration results for report appendices.</li>
+                <li>n8n-based reporting workflows.</li>
+              </ul>
+              <a href="https://github.com/joshchalabi/Orchestrator" target="_blank"
+                class="inline-flex items-center mt-4 text-sm font-bold text-white hover:text-blue-500 transition-colors">
+                View on GitHub <i class="fas fa-arrow-right ml-2 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- EDUCATION & CERTS -->
+        <section id="education" class="bg-cyber-black border border-[#23305f] rounded-xl p-6 md:p-7">
+          <h2 class="text-2xl font-bold text-white">Education & Certifications</h2>
+
+          <div class="mt-6 space-y-6">
+            <div>
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                <h3 class="text-lg md:text-xl font-bold text-white">Google Cybersecurity Certificate • Program</h3>
+                <div class="text-xs text-gray-500 flex gap-3">
+                  <span class="inline-flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>2024 — 2025</span>
+                </div>
+              </div>
+              <p class="text-gray-300 text-sm mt-2">Foundations of information security, log analysis, threat modeling, SIEM concepts, and secure practices.</p>
+            </div>
+
+            <div class="border-t border-[#23305f] pt-6">
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                <h3 class="text-lg md:text-xl font-bold text-white">TryHackMe • Completed Learning Paths</h3>
+                <div class="text-xs text-gray-500 flex gap-3">
+                  <span class="inline-flex items-center"><span class="w-2 h-2 bg-cyber-red rounded-full mr-2"></span>2025</span>
+                </div>
+              </div>
+              <ul class="mt-4 space-y-2 text-sm text-gray-300 list-disc pl-5">
+                <li><strong>Jr Penetration Tester (Completed):</strong> methodology, recon, web & infrastructure assessments with Burp Suite, Nmap, and Metasploit.</li>
+                <li><strong>Offensive Pentesting (Completed):</strong> realistic exploitation scenarios, buffer overflow fundamentals, Active Directory modules, and concepts for lateral movement & pivoting.</li>
+                <li><strong>Certificates:</strong> completion certificates are linked via portfolio.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Sidebar Column (1/3) -->
+      <aside class="space-y-6">
+
+        <!-- KPI (classic resume sidebar) -->
+        <section class="bg-cyber-black border border-[#23305f] rounded-xl p-6">
+          <h2 class="text-xl font-bold text-white">Quick KPIs</h2>
+          <div class="mt-4 grid grid-cols-1 gap-3">
+            <div class="bg-cyber-gray/40 border border-[#23305f] rounded-lg p-4">
+              <div class="text-3xl font-bold text-white">66+</div>
+              <div class="text-sm text-gray-400">PG hosts (last month) + reporting</div>
+            </div>
+            <div class="bg-cyber-gray/40 border border-[#23305f] rounded-lg p-4">
+              <div class="text-3xl font-bold text-white">B2–C1</div>
+              <div class="text-sm text-gray-400">German (B2–C1) • English (B2)</div>
+            </div>
+            <div class="bg-cyber-gray/40 border border-[#23305f] rounded-lg p-4">
+              <div class="text-3xl font-bold text-white">Portfolio</div>
+              <div class="text-sm text-gray-400">Reports & certificates</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Skills chips -->
+        <section id="skills" class="bg-cyber-black border border-[#23305f] rounded-xl p-6">
+          <h2 class="text-xl font-bold text-white">Technical Skills</h2>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Web Enumeration</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Nmap</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Burp Suite</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Gobuster / FFUF</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Linux PrivEsc</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Windows PrivEsc</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">AD Fundamentals (LDAP/Kerberos)</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Kerberoasting (Lab)</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">SMB / WinRM / RDP</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Pivoting (SSH/ProxyChains)</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Report Writing</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Obsidian KB</span>
+          </div>
+        </section>
+
+        <!-- Tool stack -->
+        <section class="bg-cyber-black border border-[#23305f] rounded-xl p-6">
+          <h2 class="text-xl font-bold text-white">Tool Stack</h2>
+          <ul class="mt-4 space-y-2 text-sm text-gray-300">
+            <li><strong>Recon/Enumeration:</strong> Nmap, theHarvester, Netcat, Curl, Whois/DNS tools</li>
+            <li><strong>Web:</strong> Burp Suite, FFUF/Gobuster, Nikto</li>
+            <li><strong>AD/Windows:</strong> Impacket (lab), BloodHound (optional), PowerShell</li>
+            <li><strong>Dev:</strong> Python (scripts), Bash; basic reading of JS/PHP</li>
+            <li><strong>Platform:</strong> Ubuntu (host), Kali (VM), KVM/QEMU, VMware</li>
+          </ul>
+        </section>
+
+        <!-- Knowledge base -->
+        <section class="bg-cyber-black border border-[#23305f] rounded-xl p-6">
+          <h2 class="text-xl font-bold text-white">Knowledge Base</h2>
+          <p class="text-sm text-gray-400 mt-3">Practical work supported by strong fundamentals:</p>
+          <ul class="mt-4 space-y-2 text-sm text-gray-300 list-disc pl-5">
+            <li><strong>Fundamentals:</strong> TCP/IP, DNS, HTTP(S), basic cryptography & hashing concepts</li>
+            <li><strong>Security approach:</strong> attack surface thinking, threat modeling, risk/impact assessment</li>
+            <li><strong>Standards:</strong> basic understanding of NIST CSF (portfolio-oriented practice)</li>
+            <li><strong>Report language:</strong> balancing technical accuracy and business impact (executive summary)</li>
+          </ul>
+        </section>
+
+        <!-- Languages -->
+        <section class="bg-cyber-black border border-[#23305f] rounded-xl p-6">
+          <h2 class="text-xl font-bold text-white">Languages</h2>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Azerbaijani (Native)</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Turkish (Native)</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">German (B2–C1)</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">English (B2)</span>
+            <span class="bg-[#1a2342] text-xs px-2 py-1 rounded text-gray-300 border border-gray-700">Russian (Good)</span>
+          </div>
+        </section>
+
+        <!-- Notes -->
+        <section class="bg-cyber-black border border-[#23305f] rounded-xl p-6">
+          <h2 class="text-xl font-bold text-white">Notes</h2>
+          <p class="text-sm text-gray-300 mt-3">
+            <strong>Target roles:</strong> Junior Penetration Tester / Security Analyst (pentest-focused)
+            <br />
+            <strong>Work model:</strong> Remote / Hybrid / On-site (Germany)
+          </p>
+        </section>
+
+      </aside>
+    </div>
+  </section>
+
+  <!-- Footer (same visual style as index.html) -->
+  <footer id="contact" class="relative z-10 bg-black border-t border-[#23305f] py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
+      <h2 class="text-2xl font-bold text-white mb-6">Let's Connect</h2>
+
+      <div class="text-gray-400 mb-8 text-center">
+        <p class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Bavaria, Germany</p>
+        <p class="mb-2"><i class="fas fa-envelope mr-2"></i>joshchalabi@gmail.com</p>
+        <p><i class="fas fa-phone mr-2"></i>+49 1520 359 3723</p>
+      </div>
+
+      <div class="flex space-x-6 mb-8">
+        <a href="https://www.linkedin.com/in/jcs3c" target="_blank"
+          class="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:bg-cyber-green hover:text-black transition-all transform hover:scale-110">
+          <i class="fab fa-linkedin-in text-xl"></i>
+        </a>
+        <a href="https://github.com/joshchalabi" target="_blank"
+          class="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:bg-cyber-green hover:text-black transition-all transform hover:scale-110">
+          <i class="fab fa-github text-xl"></i>
+        </a>
+        <a href="mailto:joshchalabi@gmail.com"
+          class="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:bg-cyber-green hover:text-black transition-all transform hover:scale-110">
+          <i class="fas fa-envelope text-xl"></i>
+        </a>
+      </div>
+
+      <p class="text-gray-600 text-sm font-mono">
+        &copy; 2026 Josh Chalabi. All rights reserved.<br />
+        <span class="text-cyber-green text-xs">System.exit(0);</span>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Same JS file as index.html (for mobile menu) -->
+  <script src="assets/js/script.js"></script>
+</body>
+
+</html>
